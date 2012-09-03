@@ -1,0 +1,12 @@
+*.suo
+*.ncb
+*.vcproj
+*.user
+*.opt
+*.clw
+*.aps
+*.mak
+Release/
+Debug/
+*~
+*.old
