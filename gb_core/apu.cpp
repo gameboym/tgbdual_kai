@@ -398,7 +398,7 @@ inline short apu_snd::wav_produce(int freq,bool interpolation)
 
 	if (freq){
 		if (interpolation){
-			ret=((cur_sample*2500-15000)*wav_cur_pos+(bef_sample*2500-15000)*(0x10000-wav_cur_pos))/0x10000;
+			ret=(short)((cur_sample*2500-15000)*wav_cur_pos+(bef_sample*2500-15000)*(0x10000-wav_cur_pos))/0x10000;
 		}
 		else{
 			ret=cur_sample*2500-15000;

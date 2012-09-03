@@ -129,21 +129,21 @@ void lcd::bg_render(void *buf,int scanline)
 	*(dat++)=pal[calc2&3];
 	*(dat++)=pal[calc1&3];
 
-	*(trans++)=(calc2>>6);
-	*(trans++)=(calc1>>6);
-	*(trans++)=(calc2>>4)&3;
-	*(trans++)=(calc1>>4)&3;
-	*(trans++)=(calc2>>2)&3;
-	*(trans++)=(calc1>>2)&3;
-	*(trans++)=calc2&3;
-	*(trans++)=calc1&3;
+	*(trans++)=(byte)(calc2>>6);
+	*(trans++)=(byte)(calc1>>6);
+	*(trans++)=(byte)(calc2>>4)&3;
+	*(trans++)=(byte)(calc1>>4)&3;
+	*(trans++)=(byte)(calc2>>2)&3;
+	*(trans++)=(byte)(calc1>>2)&3;
+	*(trans++)=(byte)calc2&3;
+	*(trans++)=(byte)calc1&3;
 
 	dat-=8;
 	trans-=8;
 
 	for (i=0;i<8-(x&7);i++){ // ƒXƒNƒ[ƒ‹•â³
 		*(dat++)=*(dat+(x&7));
-		*(trans++)=*(dat+(x&7));
+		*(trans++)=(byte)*(dat+(x&7));
 	}
 
 	for (i=0;i<20;i++){
@@ -173,14 +173,14 @@ void lcd::bg_render(void *buf,int scanline)
 		*(dat++)=pal[calc2&3];
 		*(dat++)=pal[calc1&3];
 
-		*(trans++)=(calc2>>6);
-		*(trans++)=(calc1>>6);
-		*(trans++)=(calc2>>4)&3;
-		*(trans++)=(calc1>>4)&3;
-		*(trans++)=(calc2>>2)&3;
-		*(trans++)=(calc1>>2)&3;
-		*(trans++)=calc2&3;
-		*(trans++)=calc1&3;
+		*(trans++)=(byte)(calc2>>6);
+		*(trans++)=(byte)(calc1>>6);
+		*(trans++)=(byte)(calc2>>4)&3;
+		*(trans++)=(byte)(calc1>>4)&3;
+		*(trans++)=(byte)(calc2>>2)&3;
+		*(trans++)=(byte)(calc1>>2)&3;
+		*(trans++)=(byte)calc2&3;
+		*(trans++)=(byte)calc1&3;
 	}
 }
 
@@ -239,14 +239,14 @@ void lcd::win_render(void *buf,int scanline)
 		*(dat++)=pal[calc2&3];
 		*(dat++)=pal[calc1&3];
 
-		*(trans++)=(calc2>>6);
-		*(trans++)=(calc1>>6);
-		*(trans++)=(calc2>>4)&3;
-		*(trans++)=(calc1>>4)&3;
-		*(trans++)=(calc2>>2)&3;
-		*(trans++)=(calc1>>2)&3;
-		*(trans++)=calc2&3;
-		*(trans++)=calc1&3;
+		*(trans++)=(byte)(calc2>>6);
+		*(trans++)=(byte)(calc1>>6);
+		*(trans++)=(byte)(calc2>>4)&3;
+		*(trans++)=(byte)(calc1>>4)&3;
+		*(trans++)=(byte)(calc2>>2)&3;
+		*(trans++)=(byte)(calc1>>2)&3;
+		*(trans++)=(byte)calc2&3;
+		*(trans++)=(byte)calc1&3;
 	}
 }
 
@@ -317,7 +317,7 @@ void lcd::sprite_render(void *buf,int scanline)
 		l2|=tmp_dat;
 
 		if (atr&0x20){ // ”½“]‚·‚é
-			byte tmp_p=l2;
+			byte tmp_p=(byte)l2;
 			l2=((l1>>2)&0x33)|((l1<<2)&0xcc);
 			__asm rol byte ptr l2,4
 			l1=((tmp_p>>2)&0x33)|((tmp_p<<2)&0xcc);
@@ -437,7 +437,7 @@ void lcd::bg_render_color(void *buf,int scanline)
 	calc2|=tmp_dat;
 
 	if (atr&0x20){ // ”½“]‚·‚é
-		byte tmp_p=calc2;
+		byte tmp_p=(byte)calc2;
 		calc2=((calc1>>2)&0x33)|((calc1<<2)&0xcc);
 		__asm rol byte ptr calc2,4
 		calc1=((tmp_p>>2)&0x33)|((tmp_p<<2)&0xcc);
@@ -453,14 +453,14 @@ void lcd::bg_render_color(void *buf,int scanline)
 	*(dat++)=pal[calc2&3];
 	*(dat++)=pal[calc1&3];
 
-	*(trans++)=(calc2>>6);
-	*(trans++)=(calc1>>6);
-	*(trans++)=(calc2>>4)&3;
-	*(trans++)=(calc1>>4)&3;
-	*(trans++)=(calc2>>2)&3;
-	*(trans++)=(calc1>>2)&3;
-	*(trans++)=calc2&3;
-	*(trans++)=calc1&3;
+	*(trans++)=(byte)(calc2>>6);
+	*(trans++)=(byte)(calc1>>6);
+	*(trans++)=(byte)(calc2>>4)&3;
+	*(trans++)=(byte)(calc1>>4)&3;
+	*(trans++)=(byte)(calc2>>2)&3;
+	*(trans++)=(byte)(calc1>>2)&3;
+	*(trans++)=(byte)calc2&3;
+	*(trans++)=(byte)calc1&3;
 
 	memset(priority,(atr&0x80),8);
 	priority+=8;
@@ -501,7 +501,7 @@ void lcd::bg_render_color(void *buf,int scanline)
 		calc2|=tmp_dat;
 
 		if (atr&0x20){ // ”½“]‚·‚é
-			byte tmp_p=calc2;
+			byte tmp_p=(byte)calc2;
 			calc2=((calc1>>2)&0x33)|((calc1<<2)&0xcc);
 			__asm rol byte ptr calc2,4
 			calc1=((tmp_p>>2)&0x33)|((tmp_p<<2)&0xcc);
@@ -517,14 +517,14 @@ void lcd::bg_render_color(void *buf,int scanline)
 		*(dat++)=pal[calc2&3];
 		*(dat++)=pal[calc1&3];
 
-		*(trans++)=(calc2>>6);
-		*(trans++)=(calc1>>6);
-		*(trans++)=(calc2>>4)&3;
-		*(trans++)=(calc1>>4)&3;
-		*(trans++)=(calc2>>2)&3;
-		*(trans++)=(calc1>>2)&3;
-		*(trans++)=calc2&3;
-		*(trans++)=calc1&3;
+		*(trans++)=(byte)(calc2>>6);
+		*(trans++)=(byte)(calc1>>6);
+		*(trans++)=(byte)(calc2>>4)&3;
+		*(trans++)=(byte)(calc1>>4)&3;
+		*(trans++)=(byte)(calc2>>2)&3;
+		*(trans++)=(byte)(calc1>>2)&3;
+		*(trans++)=(byte)calc2&3;
+		*(trans++)=(byte)calc1&3;
 
 		memset(priority,(atr&0x80),8);
 		priority+=8;
@@ -590,7 +590,7 @@ void lcd::win_render_color(void *buf,int scanline)
 		calc2|=tmp_dat;
 
 		if (atr&0x20){ // ”½“]‚·‚é
-			byte tmp_p=calc2;
+			byte tmp_p=(byte)calc2;
 			calc2=((calc1>>2)&0x33)|((calc1<<2)&0xcc);
 			__asm rol byte ptr calc2,4
 			calc1=((tmp_p>>2)&0x33)|((tmp_p<<2)&0xcc);
@@ -606,14 +606,14 @@ void lcd::win_render_color(void *buf,int scanline)
 		*(dat++)=pal[calc2&3];
 		*(dat++)=pal[calc1&3];
 
-		*(trans++)=(calc2>>6);
-		*(trans++)=(calc1>>6);
-		*(trans++)=(calc2>>4)&3;
-		*(trans++)=(calc1>>4)&3;
-		*(trans++)=(calc2>>2)&3;
-		*(trans++)=(calc1>>2)&3;
-		*(trans++)=calc2&3;
-		*(trans++)=calc1&3;
+		*(trans++)=(byte)(calc2>>6);
+		*(trans++)=(byte)(calc1>>6);
+		*(trans++)=(byte)(calc2>>4)&3;
+		*(trans++)=(byte)(calc1>>4)&3;
+		*(trans++)=(byte)(calc2>>2)&3;
+		*(trans++)=(byte)(calc1>>2)&3;
+		*(trans++)=(byte)calc2&3;
+		*(trans++)=(byte)calc1&3;
 
 		memset(priority,(atr&0x80),8);
 		priority+=8;
@@ -680,7 +680,7 @@ void lcd::sprite_render_color(void *buf,int scanline)
 		l2|=tmp_dat;
 
 		if (atr&0x20){ // ”½“]‚·‚é
-			byte tmp_p=l2;
+			byte tmp_p=(byte)l2;
 			l2=((l1>>2)&0x33)|((l1<<2)&0xcc);
 			__asm rol byte ptr l2,4
 			l1=((tmp_p>>2)&0x33)|((tmp_p<<2)&0xcc);

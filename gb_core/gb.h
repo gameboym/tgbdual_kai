@@ -1,6 +1,6 @@
 /*--------------------------------------------------
    TGB Dual - Gameboy Emulator -
-   Copyright (C) 2001  Hii
+   Copyright (C) 2001-2012  Hii & gbm
 
    This program is free software; you can redistribute it and/or
    modify it under the terms of the GNU General Public License
@@ -26,9 +26,7 @@
 
 #include "gb_types.h"
 #include "renderer.h"
-// ADDS Debugmode 06/05/16
 #include "../debugtool/modu.hpp"
-// ADDE Debugmode 06/05/16
 #define INT_VBLANK 1
 #define INT_LCDC 2
 #define INT_TIMER 4
@@ -43,11 +41,10 @@ class apu_snd;
 class rom;
 class mbc;
 class cheat;
-// ADDS Debugmode 06/05/16
 extern GbCodeLoging gLoging;
 extern ProcessBreakerb gBreakerb;
 extern ProcessBreakerb gBreakerreadb;
-// ADDE Debugmode 06/05/16
+
 struct ext_hook{
 	byte (*send)(byte);
 	bool (*led)(void);
@@ -476,23 +473,18 @@ public:
 	~cpu();
 
 	byte read(word adr) {
-// ADDS Debugmode 10/09/10
-	gBreakerreadb.check(adr);
-// ADDE Debugmode 10/09/10
+		gBreakerreadb.check(adr);	// ブレークポイント
 		return (ref_gb->get_cheat()->get_cheat_map()[adr])?ref_gb->get_cheat()->cheat_read(adr):read_direct(adr);
 	}
-// ADDS Debugmode 10/09/11
-	byte read_nocheck(word adr) {
+
+	byte read_nocheck(word adr) {	// ブレークポイントチェック処理なし
 		return (ref_gb->get_cheat()->get_cheat_map()[adr])?ref_gb->get_cheat()->cheat_read(adr):read_direct(adr);
 	}
 	void write_nocheck(word adr,byte dat);
-// ADDE Debugmode 10/09/11
 	byte inline read_direct(word adr);
 	void inline write(word adr,byte dat);
 	word inline readw(word adr) { return read(adr)|(read(adr+1)<<8); }
-// CHGS Debugmode 10/09/11
 	word inline readw_nocheck(word adr) { return read_nocheck(adr)|(read_nocheck(adr+1)<<8); }
-// CHGE Debugmode 10/09/11
 	void inline writew(word adr,word dat) { write(adr,(byte)dat);write(adr+1,dat>>8); }
 
 	void exec(int clocks);
@@ -523,15 +515,12 @@ public:
 	void restore_state_ex(int *dat);
 
 private:
-	// ADDS Debugmode 06/05/16
 	byte buf;
 	word wbuf;
-	// ADDE Debugmode 06/05/16
 
 	byte inline io_read(word adr);
 	void inline io_write(word adr,byte dat);
 
-	// CHGS Debugmode 10/09/11
 	byte op_read() {
 		buf = read_nocheck(regs.PC);
 		gLoging.insert(buf, regs.PC);
@@ -540,13 +529,12 @@ private:
 	}
 	word op_readw() {
 		wbuf = readw_nocheck(regs.PC);
-		gLoging.insert(wbuf & 0xFF, regs.PC);
-		gBreakerb.check(regs.PC++);
-		gLoging.insert(wbuf >> 8, regs.PC);
-		gBreakerb.check(regs.PC++);
+		gLoging.insert(wbuf & 0xFF, regs.PC);	// ロガー
+		gBreakerb.check(regs.PC++);				// ブレークポイント
+		gLoging.insert(wbuf >> 8, regs.PC);		// ロガー
+		gBreakerb.check(regs.PC++);				// ブレークポイント
 		return wbuf;
 	}
-	// CHGS Debugmode 10/09/11
 
 	int dasm(char *S,byte *A);
 	void log();

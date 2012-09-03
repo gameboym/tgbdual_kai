@@ -69,10 +69,8 @@
 // GB orginal op_code
 
 case 0x08: writew(op_readw(),REG_SP);break; //LD (mn),SP
-// CHGS Loging 2011/03/07
-//case 0x10: if (speed_change) { speed_change=false;speed^=1;REG_PC++;/* 1バイト読み飛ばす */ } else { halt=true;REG_PC--; }break; //STOP(HALT?)
+// ログを取るようにREG_PC++となっていた場所をop_read呼び出しに変更
 case 0x10: if (speed_change) { speed_change=false;speed^=1;op_read();/* 1バイト読み飛ばす */ } else { halt=true;REG_PC--; }break; //STOP(HALT?)
-// CHGE Loging 2011/03/07
 
 //0x2A LD A,(mn) -> LD A,(HLI) Load A from (HL) and decrement HL
 case 0x2A: REG_A=read(REG_HL);REG_HL++;break; // LD A,(HLI) : 00 111 010 :state 13
@@ -466,47 +464,32 @@ case 0x1F: tmp.b.l=REG_A&1;REG_A=(REG_A>>1)|(REG_F<<7);REG_F=tmp.b.l;break; //RR
 case 0xC3: REG_PC=op_readw();break;//JP mn : state 10 (16?)
 
 //JP cc,mn : 11 cc 010 : state 16 or 12
-// CHGS loging 2011/03/07
-//case 0xC2: if (REG_F&Z_FLAG) REG_PC+=2; else { REG_PC=op_readw();tmp_clocks=16; };break; // JPNZ mn
-//case 0xCA: if (REG_F&Z_FLAG) { REG_PC=op_readw();tmp_clocks=16; } else REG_PC+=2;;break; // JPZ mn
-//case 0xD2: if (REG_F&C_FLAG) REG_PC+=2; else { REG_PC=op_readw();tmp_clocks=16; };break; // JPNC mn
-//case 0xDA: if (REG_F&C_FLAG) { REG_PC=op_readw();tmp_clocks=16; } else REG_PC+=2;;break; // JPC mn
+// ログを取るようにREG_PC++となっていた場所をop_read呼び出しに変更
 case 0xC2: if (REG_F&Z_FLAG) op_readw(); else { REG_PC=op_readw();tmp_clocks=16; };break; // JPNZ mn
 case 0xCA: if (REG_F&Z_FLAG) { REG_PC=op_readw();tmp_clocks=16; } else op_readw();;break; // JPZ mn
 case 0xD2: if (REG_F&C_FLAG) op_readw(); else { REG_PC=op_readw();tmp_clocks=16; };break; // JPNC mn
 case 0xDA: if (REG_F&C_FLAG) { REG_PC=op_readw();tmp_clocks=16; } else op_readw();;break; // JPC mn
-// CHGE loging 2011/03/07
 
 case 0xE9: REG_PC=REG_HL;break; //JP HL : state 4 
 case 0x18: REG_PC+=(signed char)op_read();break;//JR e : state 12
 
 //JR cc,e : 00 1cc 000 : state 12(not jumped ->8)
-// CHGS loging 2011/03/07
-//case 0x20: if (REG_F&Z_FLAG) REG_PC+=1; else {REG_PC+=(signed char)op_read();tmp_clocks=12;} break;// JRNZ
-//case 0x28: if (REG_F&Z_FLAG) {REG_PC+=(signed char)op_read();tmp_clocks=12;} else REG_PC+=1; break;// JRZ
-//case 0x30: if (REG_F&C_FLAG) REG_PC+=1; else {REG_PC+=(signed char)op_read();tmp_clocks=12;} break;// JRNC
-//case 0x38: if (REG_F&C_FLAG) {REG_PC+=(signed char)op_read();tmp_clocks=12;} else REG_PC+=1; break;// JRC
+// ログを取るようにREG_PC++となっていた場所をop_read呼び出しに変更
 case 0x20: if (REG_F&Z_FLAG) op_read(); else {REG_PC+=(signed char)op_read();tmp_clocks=12;} break;// JRNZ
 case 0x28: if (REG_F&Z_FLAG) {REG_PC+=(signed char)op_read();tmp_clocks=12;} else op_read(); break;// JRZ
 case 0x30: if (REG_F&C_FLAG) op_read(); else {REG_PC+=(signed char)op_read();tmp_clocks=12;} break;// JRNC
 case 0x38: if (REG_F&C_FLAG) {REG_PC+=(signed char)op_read();tmp_clocks=12;} else op_read(); break;// JRC
-// CHGE loging 2011/03/07
 
 //call/ret opcode
 
 case 0xCD: REG_SP-=2;writew(REG_SP,REG_PC+2);REG_PC=op_readw();break; //CALL mn :state 24
 
 //CALL cc,mn : 11 0cc 100 : state 24 or 12
-// CHGS loging 2011/03/07
-//case 0xC4: if (REG_F&Z_FLAG) REG_PC+=2; else {REG_SP-=2;writew(REG_SP,REG_PC+2);REG_PC=op_readw();tmp_clocks=24;} break; //CALLNZ mn
-//case 0xCC: if (REG_F&Z_FLAG) {REG_SP-=2;writew(REG_SP,REG_PC+2);REG_PC=op_readw();tmp_clocks=24;} else REG_PC+=2; break; //CALLZ mn
-//case 0xD4: if (REG_F&C_FLAG) REG_PC+=2; else {REG_SP-=2;writew(REG_SP,REG_PC+2);REG_PC=op_readw();tmp_clocks=24;} break; //CALLNC mn
-//case 0xDC: if (REG_F&C_FLAG) {REG_SP-=2;writew(REG_SP,REG_PC+2);REG_PC=op_readw();tmp_clocks=24;} else REG_PC+=2; break; //CALLC mn
+// ログを取るようにREG_PC++となっていた場所をop_read呼び出しに変更
 case 0xC4: if (REG_F&Z_FLAG) op_readw(); else {REG_SP-=2;writew(REG_SP,REG_PC+2);REG_PC=op_readw();tmp_clocks=24;} break; //CALLNZ mn
 case 0xCC: if (REG_F&Z_FLAG) {REG_SP-=2;writew(REG_SP,REG_PC+2);REG_PC=op_readw();tmp_clocks=24;} else op_readw(); break; //CALLZ mn
 case 0xD4: if (REG_F&C_FLAG) op_readw(); else {REG_SP-=2;writew(REG_SP,REG_PC+2);REG_PC=op_readw();tmp_clocks=24;} break; //CALLNC mn
 case 0xDC: if (REG_F&C_FLAG) {REG_SP-=2;writew(REG_SP,REG_PC+2);REG_PC=op_readw();tmp_clocks=24;} else op_readw(); break; //CALLC mn
-// CHGE loging 2011/03/07
 
 //RST p : 11 t 111 (p=t<<3) : state 16
 case 0xC7: REG_SP-=2;writew(REG_SP,REG_PC);REG_PC=0x00;break; //RST 0x00

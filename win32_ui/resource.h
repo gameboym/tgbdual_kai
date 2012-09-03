@@ -290,6 +290,8 @@
 #define ID_PAR_KAI                      40123
 #define ID_DEBUGNEXTFRAME               40124
 #define ID_PAUSE_KEY                    -25408
+#define ID_ACCELERATOR40129             40129
+#define ID_STARTSTOP                    40129
 #define ID_TGBHELP                      41000
 #define ID_ENVIRONMRNT                  48000
 #define ID_SAVE_DMY                     49000
@@ -300,7 +302,7 @@
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        133
-#define _APS_NEXT_COMMAND_VALUE         40129
+#define _APS_NEXT_COMMAND_VALUE         40131
 #define _APS_NEXT_CONTROL_VALUE         1178
 #define _APS_NEXT_SYMED_VALUE           107
 #endif

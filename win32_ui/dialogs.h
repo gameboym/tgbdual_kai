@@ -1,6 +1,6 @@
 /*--------------------------------------------------
    TGB Dual - Gameboy Emulator -
-   Copyright (C) 2001  Hii
+   Copyright (C) 2001-2012  Hii & gbm
 
    This program is free software; you can redistribute it and/or
    modify it under the terms of the GNU General Public License
@@ -2104,20 +2104,12 @@ static BOOL CALLBACK NoMemProc(HWND hwnd,UINT uMsg,WPARAM wParam,LPARAM lParam)
 				g_gb[0]->get_cpu()->read(((tmp&0xff)<<4)+0xd007),
 				g_gb[0]->get_cpu()->read(((tmp&0xff)<<4)+0xd008),
 				g_gb[0]->get_cpu()->read(((tmp&0xff)<<4)+0xd009),
-// CHGS バグ修正 11/01/10 16進数なのに9の次が10になってる。
-//				g_gb[0]->get_cpu()->read(((tmp&0xff)<<4)+0xd010),
-//				g_gb[0]->get_cpu()->read(((tmp&0xff)<<4)+0xd011),
-//				g_gb[0]->get_cpu()->read(((tmp&0xff)<<4)+0xd012),
-//				g_gb[0]->get_cpu()->read(((tmp&0xff)<<4)+0xd013),
-//				g_gb[0]->get_cpu()->read(((tmp&0xff)<<4)+0xd014),
-//				g_gb[0]->get_cpu()->read(((tmp&0xff)<<4)+0xd015));
 				g_gb[0]->get_cpu()->read(((tmp&0xff)<<4)+0xd00a),
 				g_gb[0]->get_cpu()->read(((tmp&0xff)<<4)+0xd00b),
 				g_gb[0]->get_cpu()->read(((tmp&0xff)<<4)+0xd00c),
 				g_gb[0]->get_cpu()->read(((tmp&0xff)<<4)+0xd00d),
 				g_gb[0]->get_cpu()->read(((tmp&0xff)<<4)+0xd00e),
 				g_gb[0]->get_cpu()->read(((tmp&0xff)<<4)+0xd00f));
-// CHGE バグ修正 11/01/10
 				SendMessage(hList,LB_INSERTSTRING,1+i,(LPARAM)buf);
 			tmp++;
 		}
@@ -3094,6 +3086,4 @@ static BOOL CALLBACK ChatProc(HWND hwnd,UINT uMsg,WPARAM wParam,LPARAM lParam)
     return FALSE;
 }
 
-// ADDS Debugmode 10/12/28 分離
 #include "debugdialogs.h"
-// ADDE Debugmode 10/12/28

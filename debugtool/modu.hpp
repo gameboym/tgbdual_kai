@@ -1,3 +1,21 @@
+/*--------------------------------------------------
+   TGB Dual - Gameboy Emulator -
+   Copyright (C) 2001-2012  Hii & gbm
+
+   This program is free software; you can redistribute it and/or
+   modify it under the terms of the GNU General Public License
+   as published by the Free Software Foundation; either version 2
+   of the License, or (at your option) any later version.
+
+   This program is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU General Public License for more details.
+
+   You should have received a copy of the GNU General Public License
+   along with this program; if not, write to the Free Software
+   Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+*/
 #include <stdio.h>
 
 extern void PAUSEprocess(void);
@@ -148,10 +166,6 @@ private :
 // __gb_code_loging______________________________________
 // 速度面を考慮しリスト構造ではなく単純なループ配列を利用
 // 重い処理は非リアルタイムに移った際に行う。
-// 2006/03/01 サイズの再構築可能。(menber.resize)
-// 2006/05/15 PCを取得するように変更。それによりLOGLIST構造体を追加。
-
-// 2006/05/15 Add LOGLIST
 typedef struct logset
 {
 	byte nemonic;

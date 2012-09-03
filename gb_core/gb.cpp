@@ -1,6 +1,6 @@
 /*--------------------------------------------------
    TGB Dual - Gameboy Emulator -
-   Copyright (C) 2001  Hii
+   Copyright (C) 2001-2012  Hii & gbm
 
    This program is free software; you can redistribute it and/or
    modify it under the terms of the GNU General Public License
@@ -23,6 +23,9 @@
 #include "gb.h"
 #include <stdlib.h>
 #include <memory.h>
+
+extern bool b_running;
+extern bool gnframeflag;
 
 gb::gb(renderer *ref,bool b_lcd,bool b_apu)
 {
@@ -385,6 +388,11 @@ void gb::run()
 					m_cpu->exec(456-80);
 				}
 				else if (regs.LY==153){
+					if (gnframeflag) {
+						if (b_running)
+							PAUSEprocess();
+						gnframeflag = false;	// フレームステップ完了
+					}
 					m_cpu->exec(80);
 					regs.LY=0;
 					m_cpu->exec(456-80); // 前のラインのかなり早目から0になるようだ。

@@ -1,6 +1,6 @@
 /*--------------------------------------------------
    TGB Dual - Gameboy Emulator -
-   Copyright (C) 2001  Hii
+   Copyright (C) 2001-2012  Hii & gbm
 
    This program is free software; you can redistribute it and/or
    modify it under the terms of the GNU General Public License
@@ -19,13 +19,10 @@
 
 //------------------------------------------------
 // CPU ニーモニック以外実装部 (I/O､IRQ 等)
-// CHG PauseProcess
-// CHG Debugmode
 
 #include "gb.h"
 #include <memory.h>
 #include <string.h>
-// ADDS PauseProcess 強制メッセージループ 06/06/14
 #include <windows.h>
 
 extern MSG msg;
@@ -33,19 +30,16 @@ extern HACCEL hAccel;
 
 extern bool b_running;
 extern bool gstepflag;
-
+extern bool gnframeflag;
 extern void PAUSEprocess();
-// ADDE PauseProcess 強制メッセージループ 06/06/14
 
 #define Z_FLAG 0x40
 #define H_FLAG 0x10
 #define N_FLAG 0x02
 #define C_FLAG 0x01
 
-// ADDS Debugmode 06/03/12
 extern ProcessBreakerb gBreakermemb;
 extern ProcessBreakerb gBreakerreadb;
-// ADDE Debugmode 06/03/12
 
 FILE *file;
 
@@ -203,23 +197,19 @@ void cpu::write(word adr,byte dat)
 		vram_bank[adr&0x1FFF]=dat;
 		break;
 	case 5:
-// ADDS Debugmode 10/09/18
-		gBreakermemb.check(adr);
-// ADDE Debugmode 10/09/18
+		gBreakermemb.check(adr);	// ブレークポイント
 		if (ref_gb->get_mbc()->is_ext_ram())
 			ref_gb->get_mbc()->get_sram()[adr&0x1FFF]=dat;//カートリッジRAM
 		else
 			ref_gb->get_mbc()->ext_write(adr,dat);
 		break;
-// CHGS Debugmode 06/05/16
 	case 6:		// workram領域への書き込み？
-		gBreakermemb.check(adr);
+		gBreakermemb.check(adr);	// ブレークポイント
 		if (adr&0x1000)
 			ram_bank[adr&0x0fff]=dat;
 		else
 			ram[adr&0x0fff]=dat;
 		break;
-// CHGE Debugmode 06/05/16
 	case 7:
 		if (adr<0xFE00){
 			if (adr&0x1000)
@@ -241,7 +231,6 @@ void cpu::write(word adr,byte dat)
 	}
 }
 
-// ADDS Debugmode 10/09/11
 void cpu::write_nocheck(word adr,byte dat)
 {
 	switch(adr>>13){
@@ -286,7 +275,6 @@ void cpu::write_nocheck(word adr,byte dat)
 		break;
 	}
 }
-// ADDE Debugmode 10/09/11
 
 byte cpu::io_read(word adr)
 {
@@ -370,7 +358,7 @@ byte cpu::io_read(word adr)
 				dword *que=ref_gb->get_target()->get_cpu()->rp_que;
 				int que_cnt=0;
 				int cur;
-				while((que[que_cnt]&0xffff)>rest_clock)	cur=que[que_cnt++]>>16;
+				while((que[que_cnt]&0xffff)>(unsigned)rest_clock)	cur=que[que_cnt++]>>16;
 //				fprintf(file,"read RP %02X\n",(ref_gb->get_cregs()->RP&1)|((cur&1)<<1)|0xC0);
 				return (ref_gb->get_cregs()->RP&1)|((cur&1)<<1)|0xC0;
 
@@ -1005,9 +993,8 @@ void cpu::exec(int clocks)
 	}
 
 	while(rest_clock>0){
-		// ADDS PauseProcess 06/06/14
 		// 最終的にこの位置で停止処理を行う。
-		if ((!b_running) && (!gstepflag))
+		if ((!b_running) && (!gstepflag) && (!gnframeflag))
 		{
 			if (PeekMessage(&msg,NULL,0,0,PM_REMOVE)){
 				if(!TranslateAccelerator(msg.hwnd,hAccel,&msg)){
@@ -1026,7 +1013,6 @@ void cpu::exec(int clocks)
 				gstepflag = false;
 			}
 		}
-		// ADDE PauseProcess 06/06/14
 		irq_process();
 
 		op_code=op_read();

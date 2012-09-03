@@ -1,6 +1,6 @@
 /*--------------------------------------------------
    TGB Dual - Gameboy Emulator -
-   Copyright (C) 2001  Hii
+   Copyright (C) 2001-2012  Hii & gbm
 
    This program is free software; you can redistribute it and/or
    modify it under the terms of the GNU General Public License
@@ -34,22 +34,19 @@
 #include "setting.h"
 #include "resource.h"
 #include "network.h"
-// ADDS cheatkai 10/12/30
 #include "../debugtool/cheatkai.hpp"
-// ADDE cheatkai 10/12/30
 
 #define hide
 
 static HINSTANCE hInstance;
 static HWND hWnd,hWnd_sub,mes_hwnd,trans_hwnd,chat_hwnd;
 static bool sram_transfer_rest=false;
-// CHGS PauseProcess 06/06/14
-bool b_running = true;
-bool gstepflag = false;
+bool b_running = true;		// false = 動作停止
+bool gstepflag = false;		// true  = 1命令実行
+bool gnframeflag = false;	// true  = 1フレーム実行
 
 MSG msg;
 HACCEL hAccel;
-// CHGE PauseProcess 06/06/14
 gb *g_gb[2];
 gbr *g_gbr;
 dx_renderer *render[2];
@@ -61,19 +58,15 @@ dmy_renderer *dmy_render;
 setting *config;
 std::list<char*> mes_list,chat_list;
 
-// ADDS PauseProcess 06/03/01
-void PAUSEprocess(void);
-// ADDE PauseProcess 06/03/01
+void PAUSEprocess(void);		// 停止処理
 
-// ADDS Debugmode 06/03/01
-GbCodeLoging gLoging(10000);
-ProcessBreakerb gBreakerb;
+GbCodeLoging gLoging(10000);	// ロガー
+// ブレーク処理
+ProcessBreakerb gBreakerb;		
 ProcessBreakerb gBreakermemb;
-ProcessBreakerb gBreakerreadb;  // メモリ読み込みへのブレークポイントも追加 2010/09/10
-// ADDE Debugmode 06/03/01
-// ADDS cheatkai 10/12/30
-CodeSearch gCodesearch;
-// ADDE cheatkai 10/12/30
+ProcessBreakerb gBreakerreadb;
+
+CodeSearch gCodesearch;			// チート改
 
 LRESULT CALLBACK WndProc(HWND hwnd,UINT uMsg,WPARAM wParam,LPARAM lParam);
 LRESULT CALLBACK WndProc2(HWND hwnd,UINT uMsg,WPARAM wParam,LPARAM lParam);
@@ -691,12 +684,6 @@ LRESULT CALLBACK WndProc(HWND hwnd,UINT uMsg,WPARAM wParam,LPARAM lParam)
 			if (render[0])
 				render[0]->resume_sound();
 			break;
-		case ID_PAUSE:
-			/* CHGS PauseProcess 06/03/01 */
-			/* PAUSE処理の外部公開関数化 */
-			PAUSEprocess();
-			break;
-			/* CHGE PauseProcess 06/03/01 */
 		case ID_CONNECT:
 			if (cur_mode==NETWORK_MODE||cur_mode==NETWORK_PREPARING) break;
 			if ((!g_gb[0])&&(!g_gb[1])){
@@ -735,22 +722,18 @@ LRESULT CALLBACK WndProc(HWND hwnd,UINT uMsg,WPARAM wParam,LPARAM lParam)
 			if (g_gb[0])
 				ShowWindow(CreateDialog(hInstance,MAKEINTRESOURCE(IDD_PAR),hwnd,ParProc),SW_SHOW);
 			break;
-		// ADDS GUI 10/12/29
 		case ID_PAR_KAI:
 			if (g_gb[0])
 				ShowWindow(CreateDialog(hInstance,MAKEINTRESOURCE(IDD_PAR_KAI),hwnd,ParKaiProc),SW_SHOW);
 			break;
-		// ADDE GUI 10/12/29
 		case ID_CHEAT:
 			if (g_gb[0])
 				ShowWindow(CreateDialog(hInstance,MAKEINTRESOURCE(IDD_CHEAT),hwnd,CheatProc),SW_SHOW);
 			break;
-		// ADDS GUI 10/09/10
 		case ID_DBG_MEMDUMP:
 			if (g_gb[0])
 				ShowWindow(CreateDialog(hInstance,MAKEINTRESOURCE(IDD_MEM_DUMP_KAI),hwnd,MemDumpKaiProc),SW_SHOW);
 			break;
-		// ADDE GUI 10/09/10
 		case ID_MEM_DUMP:
 			if (g_gb[0])
 				ShowWindow(CreateDialog(hInstance,MAKEINTRESOURCE(IDD_MEM_DUMP),hwnd,MemProc),SW_SHOW);
@@ -762,7 +745,6 @@ LRESULT CALLBACK WndProc(HWND hwnd,UINT uMsg,WPARAM wParam,LPARAM lParam)
 		case ID_VERSION:
 			ShowWindow(CreateDialog(hInstance,MAKEINTRESOURCE(IDD_VERSION),hwnd,VerProc),SW_SHOW);
 			break;
-		// ADDS GUI 06/06/13
 		case ID_DEBUG:
 			DialogBox(hInstance, MAKEINTRESOURCE(IDD_DEBUGMENU), hwnd, DbgMenuProc);
 			break;
@@ -784,6 +766,12 @@ LRESULT CALLBACK WndProc(HWND hwnd,UINT uMsg,WPARAM wParam,LPARAM lParam)
 			if (g_gb[0])
 				gstepflag = true;
 			break;
+		case ID_DEBUGNEXTFRAME:
+			// fall through
+		case ID_DBG_NEXTFRAME:
+			if (g_gb[0])
+				gnframeflag = true;
+			break;
 		case ID_DBG_LOGOPEN:
 			if (g_gb[0])
 				ShowWindow(CreateDialog(hInstance, MAKEINTRESOURCE(IDD_DBG_LOGVIEW), hwnd, DbgLogViewProc), SW_SHOW);
@@ -798,7 +786,6 @@ LRESULT CALLBACK WndProc(HWND hwnd,UINT uMsg,WPARAM wParam,LPARAM lParam)
 			if (g_gb[0])
 				ShowWindow(CreateDialog(hInstance, MAKEINTRESOURCE(IDD_DBG_REGISTER), hwnd, DbgRegisterProc), SW_SHOW);
 			break;
-		// ADDE GUI 06/06/13
 		case ID_FULLSCREEN:
 			render[0]->pause_sound();
 			render[0]->swith_screen_mode();
@@ -947,7 +934,6 @@ LRESULT CALLBACK WndProc(HWND hwnd,UINT uMsg,WPARAM wParam,LPARAM lParam)
 			}
 			break;
 		case ID_EXIT:
-			// CHGS PauseProcess 10/12/28
 			if (b_running)
 				DestroyWindow(hwnd);
 			else
@@ -956,7 +942,6 @@ LRESULT CALLBACK WndProc(HWND hwnd,UINT uMsg,WPARAM wParam,LPARAM lParam)
 				PAUSEprocess();
 			}
 			break;
-			// CHGE PauseProcess 10/12/28
 		default:
 			if ((LOWORD(wParam)>=ID_ENVIRONMRNT)&&(LOWORD(wParam)<(ID_ENVIRONMRNT+256))&&(g_gb[0])){
 				if (dev_loaded)
@@ -978,7 +963,6 @@ LRESULT CALLBACK WndProc(HWND hwnd,UINT uMsg,WPARAM wParam,LPARAM lParam)
 		}
 		break;
 	case WM_CLOSE:
-		// CHGS PauseProcess 10/12/28
 		if (b_running)
 			DestroyWindow(hwnd);
 		else
@@ -987,7 +971,6 @@ LRESULT CALLBACK WndProc(HWND hwnd,UINT uMsg,WPARAM wParam,LPARAM lParam)
 			PAUSEprocess();
 		}
 		break;
-		// CHGE PauseProcess 10/12/28
 	case WM_DESTROY:
 		if (dev_loaded){
 			trush_device();
@@ -1282,10 +1265,6 @@ LRESULT CALLBACK WndProc2(HWND hwnd,UINT uMsg,WPARAM wParam,LPARAM lParam)
 	return 0;
 }
 
-/* CHGS PauseProcess 10/12/28 */
-/* 06/03/01 PAUSE処理の外部公開関数化 */
-/* 06/05/23 停止条件や利用不可時のメッセージ表示などを追加 */
-/* 10/12/28 ginfomodeの削除 */
 void PAUSEprocess(void)
 {
 	if (cur_mode==NETWORK_MODE||cur_mode==NETWORK_PREPARING)
@@ -1303,4 +1282,3 @@ void PAUSEprocess(void)
 				render[0]->pause_sound();
 	}
 }
-/* CHGE PauseProcess 10/12/28 */

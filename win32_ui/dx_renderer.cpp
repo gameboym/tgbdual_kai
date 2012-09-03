@@ -1,6 +1,6 @@
 /*--------------------------------------------------
    TGB Dual - Gameboy Emulator -
-   Copyright (C) 2001  Hii
+   Copyright (C) 2001-2012  Hii & gbm
 
    This program is free software; you can redistribute it and/or
    modify it under the terms of the GNU General Public License
@@ -1277,7 +1277,7 @@ bool dx_renderer::check_press(key_dat *dat)
 
 void dx_renderer::refresh()
 {
-	static bool bef_f5=false,bef_f7=false,bef_auto=false,bef_pause=false;
+	static bool bef_f5=false,bef_f7=false,bef_auto=false;
 
 	if (b_pad_update||movie_playing||movie_recording)
 		update_pad();
@@ -1293,11 +1293,8 @@ void dx_renderer::refresh()
 	}
 	else if (!bef_auto&&check_press(&auto_key))
 		toggle_auto();
-	else if (!bef_pause&&check_press(&pause_key))
-		SendMessage(m_hwnd,WM_COMMAND,MAKEWPARAM(ID_PAUSE,0),0);
 
 	bef_f5=check_press(&save_key)?true:false;
 	bef_f7=check_press(&load_key)?true:false;
 	bef_auto=check_press(&auto_key)?true:false;
-	bef_pause=check_press(&pause_key)?true:false;
 }
