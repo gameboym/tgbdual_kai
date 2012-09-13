@@ -19,7 +19,6 @@
 
 //--------------------------------------------------
 // GB クラス定義部,その他
-// GHG Debugmode
 
 #include <stdio.h>
 #include <list>
@@ -27,11 +26,12 @@
 #include "gb_types.h"
 #include "renderer.h"
 #include "../debugtool/modu.hpp"
-#define INT_VBLANK 1
-#define INT_LCDC 2
-#define INT_TIMER 4
-#define INT_SERIAL 8
-#define INT_PAD 16
+
+#define INT_VBLANK	1
+#define INT_LCDC	2
+#define INT_TIMER	4
+#define INT_SERIAL	8
+#define INT_PAD		16
 
 class gb;
 class cpu;
@@ -60,16 +60,16 @@ struct cheat_dat{
 };
 
 struct gb_regs {
-	byte P1,SB,SC,DIV,TIMA,TMA,TAC,IF,LCDC,STAT,SCY,SCX,LY,LYC,DMA,BGP,OBP1,OBP2,WY,WX,IE;
+	byte P1, SB, SC, DIV, TIMA, TMA, TAC, IF, LCDC, STAT, SCY, SCX, LY, LYC, DMA, BGP, OBP1, OBP2, WY, WX, IE;
 };
 
 struct gbc_regs {
-	byte KEY1,VBK,HDMA1,HDMA2,HDMA3,HDMA4,HDMA5,RP,BCPS,BCPD,OCPS,OCPD,SVBK;
+	byte KEY1, VBK, HDMA1, HDMA2, HDMA3, HDMA4, HDMA5, RP, BCPS, BCPD, OCPS, OCPD, SVBK;
 };
 
 union pare_reg {
 	word w;
-	struct{byte l,h;}b;
+	struct{byte l, h;} b;
 };
 
 struct cpu_regs {
@@ -170,7 +170,7 @@ class gb
 {
 friend class cpu;
 public:
-	gb(renderer *ref,bool b_lcd,bool b_apu);
+	gb(renderer *ref, bool b_lcd, bool b_apu);
 	~gb();
 
 	cpu *get_cpu() { return m_cpu; }
@@ -187,14 +187,14 @@ public:
 	void run();
 	void reset();
 	void set_skip(int frame);
-	void set_use_gba(bool use) { use_gba=use; }
-	bool load_rom(byte *buf,int size,byte *ram,int ram_size);
+	void set_use_gba(bool use) { use_gba = use; }
+	bool load_rom(byte *buf, int size, byte *ram, int ram_size);
 	void save_state(FILE *file);
 	void restore_state(FILE *file);
 
 	void refresh_pal();
 
-	void set_target(gb *tar) { target=tar; }
+	void set_target(gb *tar) { target = tar; }
 
 	void hook_extport(ext_hook *ext);
 	void unhook_extport();
@@ -215,7 +215,7 @@ private:
 	gbc_regs c_regs;
 
 	word dmy[160*5]; // vframe はみ出した時用
-	word vframe[160*(144+100)];
+	word vframe[160 * (144+100)];
 
 	ext_hook hook_proc;
 
@@ -234,7 +234,7 @@ public:
 	~cheat();
 
 	byte cheat_read(word adr);
-	void cheat_write(word adr,byte dat);
+	void cheat_write(word adr, byte dat);
 
 	bool cheak_cheat(word adr);
 	void create_cheat_map();
@@ -267,24 +267,24 @@ public:
 	lcd(gb *ref);
 	~lcd();
 
-	void render(void *buf,int scanline);
+	void render(void *buf, int scanline);
 	void reset();
-	void clear_win_count() { now_win_line=9; }
+	void clear_win_count() { now_win_line = 9; }
 	word *get_pal(int num) { return col_pal[num]; }
 	word *get_mapped_pal(int num) { return mapped_pal[num]; }
 
-	void set_enable(int layer,bool enable);
+	void set_enable(int layer, bool enable);
 	bool get_enable(int layer);
 
 	int get_sprite_count() { return sprite_count; };
 
 private:
-	void bg_render(void *buf,int scanline);
-	void win_render(void *buf,int scanline);
-	void sprite_render(void *buf,int scanline);
-	void bg_render_color(void *buf,int scanline);
-	void win_render_color(void *buf,int scanline);
-	void sprite_render_color(void *buf,int scanline);
+	void bg_render(void *buf, int scanline);
+	void win_render(void *buf, int scanline);
+	void sprite_render(void *buf, int scanline);
+	void bg_render_color(void *buf, int scanline);
+	void win_render_color(void *buf, int scanline);
+	void sprite_render_color(void *buf, int scanline);
 
 	word m_pal16[4];
 	dword m_pal32[4];
@@ -292,7 +292,8 @@ private:
 	word mapped_pal[16][4];
 
 	int trans_count;
-	byte trans_tbl[160+160],priority_tbl[320];
+	byte trans_tbl[160+160];
+	byte priority_tbl[320];
 
 	int now_win_line;
 	int mul;
@@ -316,7 +317,7 @@ public:
 	byte *get_mem();
 
 	byte read(word adr);
-	void write(word adr,byte dat,int clock);
+	void write(word adr, byte dat, int clock);
 
 	void update();
 	void reset();
@@ -335,25 +336,26 @@ public:
 
 	void set_enable(int ch,bool enable);
 	bool get_enable(int ch);
-	void set_echo(bool echo){ b_echo=echo; };
-	void set_lowpass(bool lowpass){ b_lowpass=lowpass; };
+	void set_echo(bool echo){ b_echo = echo; };
+	void set_lowpass(bool lowpass){ b_lowpass = lowpass; };
 	bool get_echo(){ return b_echo; };
 	bool get_lowpass(){ return b_lowpass; };
 
 
-	void render(short *buf,int sample);
+	void render(short *buf, int sample);
 	void reset();
 
 private:
-	void process(word adr,byte dat);
+	void process(word adr, byte dat);
 	void update();
 	short sq1_produce(int freq);
 	short sq2_produce(int freq);
-	short wav_produce(int freq,bool interpolation);
+	short wav_produce(int freq);
 	short noi_produce(int freq);
 
 	apu_stat stat;
-	apu_stat stat_cpy,stat_tmp;
+	apu_stat stat_cpy;
+	apu_stat stat_tmp;
 	apu_que write_que[0x10000];
 	int que_count;
 	int bef_clock;
@@ -375,28 +377,28 @@ public:
 	byte *get_rom() { return rom_page; }
 	byte *get_sram() { return sram_page; }
 	bool is_ext_ram() { return ext_is_ram; }
-	void set_ext_is(bool ext) { ext_is_ram=ext; }
+	void set_ext_is(bool ext) { ext_is_ram = ext; }
 
 	int get_state();
 	void set_state(int dat);
-	void set_page(int rom,int sram);
+	void set_page(int rom, int sram);
 
 	byte mbc::read(word adr);
-	void mbc::write(word adr,byte dat);
+	void mbc::write(word adr, byte dat);
 	byte mbc::ext_read(word adr);
-	void mbc::ext_write(word adr,byte dat);
+	void mbc::ext_write(word adr, byte dat);
 	void reset();
 
 private:
-	void mbc1_write(word adr,byte dat);
-	void mbc2_write(word adr,byte dat);
-	void mbc3_write(word adr,byte dat);
-	void mbc5_write(word adr,byte dat);
-	void mbc7_write(word adr,byte dat);
-	void huc1_write(word adr,byte dat);
-	void huc3_write(word adr,byte dat);
-	void tama5_write(word adr,byte dat);
-	void mmm01_write(word adr,byte dat);
+	void mbc1_write(word adr, byte dat);
+	void mbc2_write(word adr, byte dat);
+	void mbc3_write(word adr, byte dat);
+	void mbc5_write(word adr, byte dat);
+	void mbc7_write(word adr, byte dat);
+	void huc1_write(word adr, byte dat);
+	void huc3_write(word adr, byte dat);
+	void tama5_write(word adr, byte dat);
+	void mmm01_write(word adr, byte dat);
 
 	byte *rom_page;
 	byte *sram_page;
@@ -404,15 +406,15 @@ private:
 	bool mbc1_16_8;
 	byte mbc1_dat;
 
-	byte mbc3_latch; // 1 bits
-	byte mbc3_sec; // 6
-	byte mbc3_min; // 6
-	byte mbc3_hour; // 5
-	byte mbc3_dayl; // 8
-	byte mbc3_dayh; // 1
+	byte mbc3_latch;	// 1 bits
+	byte mbc3_sec;		// 6
+	byte mbc3_min;		// 6
+	byte mbc3_hour;		// 5
+	byte mbc3_dayl;		// 8
+	byte mbc3_dayh;		// 1
 
-	byte mbc3_timer; // 4
-	bool ext_is_ram; // 1
+	byte mbc3_timer;	// 4
+	bool ext_is_ram;	// 1
 	// total 32bits
 
 	int mbc5_dat;
@@ -449,9 +451,9 @@ public:
 	bool has_battery();
 	int get_sram_size(); // byte単位
 
-	void set_first(int page) { first_page=dat+0x4000*page; }
+	void set_first(int page) { first_page = dat + 0x4000 * page; }
 
-	bool load_rom(byte *buf,int size,byte *ram,int ram_size);
+	bool load_rom(byte *buf, int size, byte *ram, int ram_size);
 
 private:
 	gb *ref_gb;
@@ -474,25 +476,25 @@ public:
 
 	byte read(word adr) {
 		gBreakerreadb.check(adr);	// ブレークポイント
-		return (ref_gb->get_cheat()->get_cheat_map()[adr])?ref_gb->get_cheat()->cheat_read(adr):read_direct(adr);
+		return (ref_gb->get_cheat()->get_cheat_map()[adr]) ? ref_gb->get_cheat()->cheat_read(adr) : read_direct(adr);
 	}
 
 	byte read_nocheck(word adr) {	// ブレークポイントチェック処理なし
-		return (ref_gb->get_cheat()->get_cheat_map()[adr])?ref_gb->get_cheat()->cheat_read(adr):read_direct(adr);
+		return (ref_gb->get_cheat()->get_cheat_map()[adr]) ? ref_gb->get_cheat()->cheat_read(adr) : read_direct(adr);
 	}
-	void write_nocheck(word adr,byte dat);
+	void write_nocheck(word adr, byte dat);
 	byte inline read_direct(word adr);
-	void inline write(word adr,byte dat);
-	word inline readw(word adr) { return read(adr)|(read(adr+1)<<8); }
-	word inline readw_nocheck(word adr) { return read_nocheck(adr)|(read_nocheck(adr+1)<<8); }
-	void inline writew(word adr,word dat) { write(adr,(byte)dat);write(adr+1,dat>>8); }
+	void inline write(word adr, byte dat);
+	word inline readw(word adr) { return read(adr) | (read(adr+1) << 8); }
+	word inline readw_nocheck(word adr) { return read_nocheck(adr) | (read_nocheck(adr+1) << 8); }
+	void inline writew(word adr, word dat) { write(adr, (byte)dat); write(adr+1, dat>>8); }
 
 	void exec(int clocks);
 	byte seri_send(byte dat);
 	void irq(int irq_type);
 	void inline irq_process();
 	void reset();
-	void set_trace(bool trace) { b_trace=trace; }
+	void set_trace(bool trace) { b_trace = trace; }
 
 	byte *get_vram() { return vram; }
 	byte *get_ram() { return ram; }
@@ -500,7 +502,7 @@ public:
 	byte *get_stack() { return stack; }
 
 	byte *get_ram_bank() { return ram_bank; }
-	void set_ram_bank(int bank) { ram_bank=ram+bank*0x1000; }
+	void set_ram_bank(int bank) { ram_bank = ram + bank * 0x1000; }
 
 	cpu_regs *get_regs() { return &regs; }
 
@@ -519,7 +521,7 @@ private:
 	word wbuf;
 
 	byte inline io_read(word adr);
-	void inline io_write(word adr,byte dat);
+	void inline io_write(word adr, byte dat);
 
 	byte op_read() {
 		buf = read_nocheck(regs.PC);
@@ -536,7 +538,7 @@ private:
 		return wbuf;
 	}
 
-	int dasm(char *S,byte *A);
+	int dasm(char *S, byte *A);
 	void log();
 
 	gb *ref_gb;
@@ -552,12 +554,12 @@ private:
 	byte *vram_bank;
 	byte *ram_bank;
 
-	byte z802gb[256],gb2z80[256];
+	byte z802gb[256];
+	byte gb2z80[256];
 	dword rp_que[256];
 	int que_cur;
-//	word org_pal[16][4];
-	int total_clock,rest_clock,sys_clock,seri_occer,div_clock;
-	bool halt,speed,speed_change,dma_executing;
+	int total_clock, rest_clock, sys_clock, seri_occer, div_clock;
+	bool halt, speed, speed_change, dma_executing;
 	bool b_trace;
 	int dma_src;
 	int dma_dest;
@@ -571,7 +573,7 @@ private:
 	byte *dma_src_bank;
 	byte *dma_dest_bank;
 
-	byte _ff6c,_ff72,_ff73,_ff74,_ff75;
+	byte _ff6c, _ff72, _ff73, _ff74, _ff75;
 
 //	FILE *file;
 };
