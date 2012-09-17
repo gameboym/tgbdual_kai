@@ -1267,18 +1267,21 @@ LRESULT CALLBACK WndProc2(HWND hwnd,UINT uMsg,WPARAM wParam,LPARAM lParam)
 
 void PAUSEprocess(void)
 {
-	if (cur_mode==NETWORK_MODE||cur_mode==NETWORK_PREPARING)
-	{
+	if ((cur_mode == NETWORK_MODE) || (cur_mode == NETWORK_PREPARING)) {
 		MessageBox(hWnd, "ネットワークモードでは利用できません。",
 			"現在のモードでは利用できません", MB_OK | MB_ICONEXCLAMATION);
 		return;
 	}
-	if (g_gb[0]){
-		b_running =! b_running;
+
+	if (g_gb[0]) {
+		b_running = !b_running;
 		if (render[0])
 			render[0]->resume_sound();
 		if (!b_running)
 			if (render[0])
 				render[0]->pause_sound();
 	}
+
+	// clear flag
+	gstepflag = gnframeflag = false;
 }

@@ -859,7 +859,7 @@ void cpu::exec(int clocks)
 		// 最終的にこの位置で停止処理を行う。
 		if ((!b_running) && (!gstepflag) && (!gnframeflag)) {
 			if (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE)) {
-				if (!TranslateAccelerator(msg.hwnd,hAccel,&msg)) {
+				if (!TranslateAccelerator(msg.hwnd, hAccel, &msg)) {
 					TranslateMessage(&msg);
 					DispatchMessage(&msg);
 				}
@@ -868,11 +868,13 @@ void cpu::exec(int clocks)
 		} else if (gstepflag) {
 			if (b_running)
 				PAUSEprocess();
-			if (0x76 != read_nocheck(regs.PC)) {	// HALTだったら継続
-				byte buf	= read_nocheck(regs.PC);
-				gstepflag	= false;
+			if (0x76 == read_nocheck(regs.PC)) {	// HALTだったら継続
+				gstepflag = true;
+			} else {
+				gstepflag = false;
 			}
 		}
+
 		irq_process();
 
 		op_code		= op_read();

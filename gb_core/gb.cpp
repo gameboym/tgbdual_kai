@@ -388,11 +388,13 @@ void gb::run()
 					m_cpu->exec(456-80);
 				}
 				else if (regs.LY==153){
+
+					// フレームステップ処理
 					if (gnframeflag) {
-						if (b_running)
-							PAUSEprocess();
-						gnframeflag = false;	// フレームステップ完了
+						b_running = true;	// 実行中(PAUSEprocesでサウンド等も停止させる)
+						PAUSEprocess();		// 停止処理
 					}
+
 					m_cpu->exec(80);
 					regs.LY=0;
 					m_cpu->exec(456-80); // 前のラインのかなり早目から0になるようだ。
