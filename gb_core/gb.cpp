@@ -375,6 +375,10 @@ void gb::run()
 				}
 				m_lcd->clear_win_count();
 				skip = skip_buf;
+				if (gnframeflag) {		// フレームステップ処理
+					b_running = true;	// 実行中をセット(PAUSEprocessでサウンド等も停止させるため)
+					PAUSEprocess();		// 停止処理
+				}
 			}
 			if (regs.LY >= 144) {	// VBlank 期間中
 				regs.STAT |= 1;
@@ -385,10 +389,6 @@ void gb::run()
 						m_cpu->irq(INT_LCDC);
 					m_cpu->exec(456 - 80);
 				} else if (regs.LY == 153) {
-					if (gnframeflag) {		// フレームステップ処理
-						b_running = true;	// 実行中をセット(PAUSEprocessでサウンド等も停止させるため)
-						PAUSEprocess();		// 停止処理
-					}
 					m_cpu->exec(80);
 					regs.LY = 0;
 					m_cpu->exec(456 - 80);	// 前のラインのかなり早目から0になるようだ。
