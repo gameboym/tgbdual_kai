@@ -296,10 +296,10 @@
 #define ID_S2_X2                        40150
 #define ID_S2_X3                        40151
 #define ID_S2_X4                        40152
-#define ID_S1_SAVE_STATE                40153
-#define ID_S1_LOAD_STATE                40154
-#define ID_W_SAVE_STATE                 40155
-#define ID_W_LOAD_STATE                 40156
+#define ID_S2_SAVE_STATE                40153
+#define ID_S2_RESTORE_STATE             40154
+#define ID_SW_SAVE_STATE                40155
+#define ID_SW_RESTORE_STATE             40156
 #define ID_S2_DBG_MEMDUMP               40159
 #define ID_DBG_MEMDUMP                  40161
 #define ID_TGBHELP                      41000

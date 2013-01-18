@@ -70,6 +70,41 @@ BEGIN
         MENUITEM SEPARATOR
         MENUITEM "終了(&X)",                    ID_EXIT
     END
+    POPUP "通信(&T)"
+    BEGIN
+        MENUITEM "Slot2に読みこみ(&2)",         ID_LOADROM2
+        MENUITEM "Slot2リセット(&E)",           ID_RESET2
+        MENUITEM "Slot2解放(&Q)",               ID_RELEASE_2
+        POPUP "Slot2状態保存(&S)"
+        BEGIN
+            MENUITEM "dummy",                       ID_SAVE2_DMY
+        END
+        POPUP "Slot2状態復元(&L)"
+        BEGIN
+            MENUITEM "dummy",                       ID_LOAD2_DMY
+        END
+        MENUITEM SEPARATOR
+        POPUP "Slot1,2状態保存(&Z)"
+        BEGIN
+            MENUITEM "dummy",                       ID_SAVE12_DMY
+        END
+        POPUP "Slot1,2状態復元(&X)"
+        BEGIN
+            MENUITEM "dummy",                       ID_LOAD12_DMY
+        END
+        MENUITEM SEPARATOR
+        POPUP "Slot2画面設定"
+        BEGIN
+            MENUITEM "x1",                          ID_S2_X1
+            MENUITEM "x2",                          ID_S2_X2
+            MENUITEM "x3",                          ID_S2_X3
+            MENUITEM "x4",                          ID_S2_X4
+        END
+        MENUITEM SEPARATOR
+        MENUITEM "Slot2メモリダンプの表示(&M)", ID_S2_DBG_MEMDUMP
+        MENUITEM SEPARATOR
+        MENUITEM "通信対戦(&T)",                ID_CONNECT
+    END
     POPUP "オプション(&O)"
     BEGIN
         MENUITEM "キーコンフィグ(&K)",          ID_KEY
@@ -153,41 +188,6 @@ BEGIN
         END
         MENUITEM SEPARATOR
         MENUITEM "ログ表示(&L)",                ID_SHOWLOG
-    END
-    POPUP "通信機能"
-    BEGIN
-        MENUITEM "Slot2に読みこみ(&2)",         ID_LOADROM2
-        MENUITEM "Slot2リセット(&E)",           ID_RESET2
-        MENUITEM "Slot2解放(&Q)",               ID_RELEASE_2
-        POPUP "Slot2状態保存(&S)"
-        BEGIN
-            MENUITEM "dummy",                       ID_SAVE2_DMY
-        END
-        POPUP "Slot2状態復元(&L)"
-        BEGIN
-            MENUITEM "dummy",                       ID_LOAD2_DMY
-        END
-        MENUITEM SEPARATOR
-        POPUP "Slot1,2状態保存(&Z)"
-        BEGIN
-            MENUITEM "dummy",                       ID_SAVE12_DMY
-        END
-        POPUP "Slot1,2状態復元(&X)"
-        BEGIN
-            MENUITEM "dummy",                       ID_LOAD12_DMY
-        END
-        MENUITEM SEPARATOR
-        POPUP "Slot2画面設定"
-        BEGIN
-            MENUITEM "x1",                          ID_S2_X1
-            MENUITEM "x2",                          ID_S2_X2
-            MENUITEM "x3",                          ID_S2_X3
-            MENUITEM "x4",                          ID_S2_X4
-        END
-        MENUITEM SEPARATOR
-        MENUITEM "Slot2メモリダンプの表示(&M)", ID_S2_DBG_MEMDUMP
-        MENUITEM SEPARATOR
-        MENUITEM "通信対戦(&T)",                ID_CONNECT
     END
     POPUP "ヘルプ(&H)"
     BEGIN

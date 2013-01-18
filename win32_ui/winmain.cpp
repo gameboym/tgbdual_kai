@@ -311,7 +311,7 @@ static void network_mode()
 	elapse_time(60); // とりあえず固定ということで
 }
 
-static void menu_save_state(HMENU hMenu, UINT_PTR id, const char *ext)
+static void menu_save_state(HMENU hMenu, int slot, UINT_PTR id, const char *ext)
 {
 	char cur_di[256], sv_dir[256], tmp[32];
 	HANDLE hFile;
@@ -325,7 +325,7 @@ static void menu_save_state(HMENU hMenu, UINT_PTR id, const char *ext)
 	for (int i = 0; i < 10; i++) {
 		for (int j = 0 ; j < 2; j++) {
 			char name[256], *p;
-			strcpy(name, tmp_sram_name[0]);
+			strcpy(name, tmp_sram_name[slot]);
 
 			if (j == 0) {
 				p = (char*)_mbsrchr((unsigned char*)name, (unsigned int)'.');
@@ -362,7 +362,7 @@ static void menu_save_state(HMENU hMenu, UINT_PTR id, const char *ext)
 	SetCurrentDirectory(cur_di);
 }
 
-static void menu_load_state(HMENU hMenu, UINT_PTR id, const char *ext)
+static void menu_load_state(HMENU hMenu, int slot, UINT_PTR id, const char *ext)
 {
 	char cur_di[256], sv_dir[256], tmp[32];
 	HANDLE hFile;
@@ -377,7 +377,7 @@ static void menu_load_state(HMENU hMenu, UINT_PTR id, const char *ext)
 	for (int i = 0; i < 10; i++) {
 		for (int j = 0; j < 2; j++) {
 			char name[256], *p;
-			strcpy(name, tmp_sram_name[0]);
+			strcpy(name, tmp_sram_name[slot]);
 
 			if (j == 0) {
 				p = (char*)_mbsrchr((unsigned char*)name, (unsigned int)'.');
@@ -652,6 +652,24 @@ LRESULT CALLBACK WndProc(HWND hwnd,UINT uMsg,WPARAM wParam,LPARAM lParam)
 		case ID_RESTORE_STATE:
 			if (cur_mode != NORMAL_MODE) break;
 			call_load_state(lParam, SLOT1, S1EXT);
+			break;
+		case ID_S2_SAVE_STATE:
+			if (cur_mode != NORMAL_MODE) break;
+			call_save_state(lParam, SLOT2, S2EXT);
+			break;
+		case ID_S2_RESTORE_STATE:
+			if (cur_mode != NORMAL_MODE) break;
+			call_load_state(lParam, SLOT2, S2EXT);
+			break;
+		case ID_SW_SAVE_STATE:
+			if (cur_mode != NORMAL_MODE) break;
+			call_save_state(lParam, SLOT1, W1EXT);
+			call_save_state(lParam, SLOT2, W2EXT);
+			break;
+		case ID_SW_RESTORE_STATE:
+			if (cur_mode != NORMAL_MODE) break;
+			call_load_state(lParam, SLOT1, W1EXT);
+			call_load_state(lParam, SLOT2, W2EXT);
 			break;
 		case ID_MOVIE_START:
 			if (g_gb[0]&&!mov_file){
@@ -1094,6 +1112,22 @@ LRESULT CALLBACK WndProc(HWND hwnd,UINT uMsg,WPARAM wParam,LPARAM lParam)
 				if (cur_mode == NETWORK_MODE || cur_mode == NETWORK_PREPARING) break;
 				render[0]->set_load_resurve(LOWORD(wParam) - ID_LOAD_DMY);
 			}
+			else if ((LOWORD(wParam) >= ID_SAVE2_DMY) && (LOWORD(wParam) < (ID_SAVE2_DMY+10)) && (g_gb[1])) {
+				if (cur_mode == NETWORK_MODE || cur_mode == NETWORK_PREPARING) break;
+				SendMessage(hwnd, WM_COMMAND, MAKEWPARAM(ID_S2_SAVE_STATE, 0), LOWORD(wParam) - ID_SAVE2_DMY);
+			}
+			else if ((LOWORD(wParam) >= ID_LOAD2_DMY) && (LOWORD(wParam) < (ID_LOAD2_DMY+10)) && (g_gb[1])) {
+				if (cur_mode == NETWORK_MODE || cur_mode == NETWORK_PREPARING) break;
+				SendMessage(hwnd, WM_COMMAND, MAKEWPARAM(ID_S2_RESTORE_STATE, 0), LOWORD(wParam) - ID_LOAD2_DMY);
+			}
+			else if ((LOWORD(wParam) >= ID_SAVE12_DMY) && (LOWORD(wParam) < (ID_SAVE12_DMY+10)) && (g_gb[0]) && (g_gb[1])) {
+				if (cur_mode == NETWORK_MODE || cur_mode == NETWORK_PREPARING) break;
+				SendMessage(hwnd, WM_COMMAND, MAKEWPARAM(ID_SW_SAVE_STATE, 0), LOWORD(wParam) - ID_SAVE12_DMY);
+			}
+			else if ((LOWORD(wParam) >= ID_LOAD12_DMY) && (LOWORD(wParam) < (ID_LOAD12_DMY+10)) && (g_gb[0]) && (g_gb[1])) {
+				if (cur_mode == NETWORK_MODE || cur_mode == NETWORK_PREPARING) break;
+				SendMessage(hwnd, WM_COMMAND, MAKEWPARAM(ID_SW_RESTORE_STATE, 0), LOWORD(wParam) - ID_LOAD12_DMY);
+			}
 			else if ((LOWORD(wParam) >= ID_TGBHELP) && (LOWORD(wParam) < (ID_TGBHELP+64))) {
 				view_help(hwnd, tgb_help[LOWORD(wParam) - ID_TGBHELP]);
 			}
@@ -1232,11 +1266,27 @@ LRESULT CALLBACK WndProc(HWND hwnd,UINT uMsg,WPARAM wParam,LPARAM lParam)
 		}
 		else if ((HMENU)wParam == search_menu(hMenu, ID_SAVE_DMY)/*GetSubMenu(GetSubMenu(hMenu,0),2)*/){ // セーブのほう
 			hMenu = search_menu(hMenu, ID_SAVE_DMY);
-			menu_save_state(hMenu, ID_SAVE_DMY, S1EXT);
+			menu_save_state(hMenu, SLOT1, ID_SAVE_DMY, S1EXT);
 		}
 		else if ((HMENU)wParam == search_menu(hMenu, ID_LOAD_DMY)/*GetSubMenu(GetSubMenu(hMenu,0),3)*/){ // ロードのほう
 			hMenu = search_menu(hMenu, ID_LOAD_DMY);
-			menu_load_state(hMenu, ID_LOAD_DMY, S1EXT);
+			menu_load_state(hMenu, SLOT1, ID_LOAD_DMY, S1EXT);
+		}
+		else if ((HMENU)wParam == search_menu(hMenu, ID_SAVE2_DMY)) {
+			hMenu = search_menu(hMenu, ID_SAVE2_DMY);
+			menu_save_state(hMenu, SLOT2, ID_SAVE2_DMY, S2EXT);
+		}
+		else if ((HMENU)wParam == search_menu(hMenu, ID_LOAD2_DMY)) {
+			hMenu = search_menu(hMenu, ID_LOAD2_DMY);
+			menu_load_state(hMenu, SLOT2, ID_LOAD2_DMY, S2EXT);
+		}
+		else if ((HMENU)wParam == search_menu(hMenu, ID_SAVE12_DMY)) {
+			hMenu = search_menu(hMenu, ID_SAVE12_DMY);
+			menu_save_state(hMenu, SLOT1, ID_SAVE12_DMY, W1EXT);
+		}
+		else if ((HMENU)wParam == search_menu(hMenu, ID_LOAD12_DMY)) {
+			hMenu = search_menu(hMenu, ID_LOAD12_DMY);
+			menu_load_state(hMenu, SLOT1, ID_LOAD12_DMY, W1EXT);
 		}
 		break;
 	case WM_DROPFILES:
