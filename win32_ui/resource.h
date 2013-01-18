@@ -286,12 +286,30 @@
 #define ID_DBG_INFORMATION              40105
 #define ID_DBG_MDUMP_RAM                40117
 #define ID_DBG_NEXTFRAME                40119
-#define ID_DBG_MEMDUMP                  40122
 #define ID_PAR_KAI                      40123
 #define ID_DEBUGNEXTFRAME               40124
 #define ID_PAUSE_KEY                    -25408
 #define ID_ACCELERATOR40129             40129
 #define ID_STARTSTOP                    40129
+#define ID_Menu                         40131
+#define ID_40132                        40132
+#define ID_40135                        40135
+#define ID_40136                        40136
+#define ID_SAVE2_DMY                    40140
+#define ID_LOAD2_DMY                    40141
+#define ID_SAVE12_DMY                   40142
+#define ID_LOAD12_DMY                   40143
+#define ID_40144                        40144
+#define ID_S2_X1                        40146
+#define ID_S2_X2                        40150
+#define ID_S2_X3                        40151
+#define ID_S2_X4                        40152
+#define ID_S1_SAVE_STATE                40153
+#define ID_S1_LOAD_STATE                40154
+#define ID_W_SAVE_STATE                 40155
+#define ID_W_LOAD_STATE                 40156
+#define ID_S2_DBG_MEMDUMP               40159
+#define ID_DBG_MEMDUMP                  40161
 #define ID_TGBHELP                      41000
 #define ID_ENVIRONMRNT                  48000
 #define ID_SAVE_DMY                     49000
@@ -301,8 +319,8 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        133
-#define _APS_NEXT_COMMAND_VALUE         40131
+#define _APS_NEXT_RESOURCE_VALUE        134
+#define _APS_NEXT_COMMAND_VALUE         40162
 #define _APS_NEXT_CONTROL_VALUE         1178
 #define _APS_NEXT_SYMED_VALUE           107
 #endif
