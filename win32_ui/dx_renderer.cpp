@@ -1277,24 +1277,26 @@ bool dx_renderer::check_press(key_dat *dat)
 
 void dx_renderer::refresh()
 {
-	static bool bef_f5=false,bef_f7=false,bef_auto=false;
+	static bool bef_f5	= false;
+	static bool bef_f7	= false;
+	static bool bef_auto= false;
 
-	if (b_pad_update||movie_playing||movie_recording)
+	if (b_pad_update || movie_playing || movie_recording)
 		update_pad();
 	update_sound();
 
-	if ((!bef_f5&&check_press(&save_key))||(save_resurve!=-1)){
-		SendMessage(m_hwnd,WM_COMMAND,MAKEWPARAM(ID_SAVE_STATE,0),save_resurve);
-		save_resurve=-1;
+	if ((!bef_f5 && check_press(&save_key)) || (save_resurve != -1)) {
+		SendMessage(m_hwnd, WM_COMMAND, MAKEWPARAM(ID_SAVE_STATE, 0), save_resurve);
+		save_resurve = -1;
 	}
-	else if ((!bef_f7&&check_press(&load_key))||(load_resurve!=-1)){
-		SendMessage(m_hwnd,WM_COMMAND,MAKEWPARAM(ID_RESTORE_STATE,0),load_resurve);
-		load_resurve=-1;
+	else if ((!bef_f7 && check_press(&load_key)) || (load_resurve != -1)) {
+		SendMessage(m_hwnd, WM_COMMAND, MAKEWPARAM(ID_RESTORE_STATE, 0), load_resurve);
+		load_resurve = -1;
 	}
-	else if (!bef_auto&&check_press(&auto_key))
+	else if (!bef_auto && check_press(&auto_key))
 		toggle_auto();
 
-	bef_f5=check_press(&save_key)?true:false;
-	bef_f7=check_press(&load_key)?true:false;
-	bef_auto=check_press(&auto_key)?true:false;
+	bef_f5	= check_press(&save_key) ? true : false;
+	bef_f7	= check_press(&load_key) ? true : false;
+	bef_auto= check_press(&auto_key) ? true : false;
 }

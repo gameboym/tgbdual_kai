@@ -37,6 +37,12 @@
 #include "../debugtool/cheatkai.hpp"
 
 #define hide
+#define S1EXT ".sv"
+#define S2EXT ".s2"
+#define W1EXT ".w1"
+#define W2EXT ".w2"
+#define SLOT1 0
+#define SLOT2 1
 
 static HINSTANCE hInstance;
 static HWND hWnd,hWnd_sub,mes_hwnd,trans_hwnd,chat_hwnd;
@@ -305,6 +311,208 @@ static void network_mode()
 	elapse_time(60); // とりあえず固定ということで
 }
 
+static void menu_save_state(HMENU hMenu, UINT_PTR id, const char *ext)
+{
+	char cur_di[256], sv_dir[256], tmp[32];
+	HANDLE hFile;
+
+	GetCurrentDirectory(256, cur_di);
+	config->get_save_dir(sv_dir);
+	SetCurrentDirectory(sv_dir);
+
+	while(DeleteMenu(hMenu, 0, MF_BYPOSITION));
+
+	for (int i = 0; i < 10; i++) {
+		for (int j = 0 ; j < 2; j++) {
+			char name[256], *p;
+			strcpy(name, tmp_sram_name[0]);
+
+			if (j == 0) {
+				p = (char*)_mbsrchr((unsigned char*)name, (unsigned int)'.');
+				if (!p) {
+					j = 2;
+					break;
+				}
+				sprintf(p, "%s%d", ext, i);
+			}
+			else if (j == 1)
+				sprintf(strstr(name, "."), "%s%d", ext, i);
+
+			hFile = CreateFile(name, GENERIC_READ, 0, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+			if (hFile != INVALID_HANDLE_VALUE) {
+				BY_HANDLE_FILE_INFORMATION	bhfi;
+				FILETIME					lft;
+				SYSTEMTIME					st;
+
+				GetFileInformationByHandle(hFile, &bhfi);
+				FileTimeToLocalFileTime(&bhfi.ftLastWriteTime, &lft);
+				FileTimeToSystemTime(&lft, &st);
+				sprintf(tmp, "%d : %04d/%02d/%02d %02d:%02d:%02d", i, st.wYear, st.wMonth, st.wDay, st.wHour, st.wMinute, st.wSecond);
+				CloseHandle(hFile);
+
+				AppendMenu(hMenu, MF_ENABLED, id+i, tmp);
+				break;
+			}
+		}
+		if (j == 2) {
+			sprintf(tmp, "%d : ----/--/-- --:--:--", i);
+			AppendMenu(hMenu, MF_ENABLED, id+i, tmp);
+		}
+	}
+	SetCurrentDirectory(cur_di);
+}
+
+static void menu_load_state(HMENU hMenu, UINT_PTR id, const char *ext)
+{
+	char cur_di[256], sv_dir[256], tmp[32];
+	HANDLE hFile;
+	MENUITEMINFO mii;
+
+	GetCurrentDirectory(256, cur_di);
+	config->get_save_dir(sv_dir);
+	SetCurrentDirectory(sv_dir);
+
+	while(DeleteMenu(hMenu, 0, MF_BYPOSITION));
+
+	for (int i = 0; i < 10; i++) {
+		for (int j = 0; j < 2; j++) {
+			char name[256], *p;
+			strcpy(name, tmp_sram_name[0]);
+
+			if (j == 0) {
+				p = (char*)_mbsrchr((unsigned char*)name, (unsigned int)'.');
+				if (!p) {
+					j = 2;
+					break;
+				}
+				sprintf(p, "%s%d", ext, i);
+			}
+			else if (j == 1)
+				sprintf(strstr(name, "."), "%s%d", ext, i);
+
+			hFile = CreateFile(name, GENERIC_READ, 0, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+			if (hFile != INVALID_HANDLE_VALUE) {
+				BY_HANDLE_FILE_INFORMATION	bhfi;
+				FILETIME					lft;
+				SYSTEMTIME					st;
+
+				GetFileInformationByHandle(hFile, &bhfi);
+				FileTimeToLocalFileTime(&bhfi.ftLastWriteTime, &lft);
+				FileTimeToSystemTime(&lft, &st);
+				sprintf(tmp, "%d : %04d/%02d/%02d %02d:%02d:%02d", i, st.wYear, st.wMonth, st.wDay, st.wHour, st.wMinute, st.wSecond);
+				CloseHandle(hFile);
+
+				AppendMenu(hMenu, MF_ENABLED, id+i, tmp);
+				break;
+			}
+		}
+		if (j == 2) {
+			sprintf(tmp, "%d : ----/--/-- --:--:--", i);
+			ZeroMemory(&mii, sizeof(mii));
+			mii.cbSize		= sizeof(mii);
+			mii.fMask		= MIIM_STATE | MIIM_TYPE | MIIM_ID;
+			mii.fState		= MFS_GRAYED;
+			mii.fType		= MFT_STRING;
+			mii.wID			= id + i;
+			mii.cch			= strlen(tmp);
+			mii.dwTypeData	= tmp;
+			InsertMenuItem(hMenu, i, TRUE, &mii);
+		}
+	}
+	SetCurrentDirectory(cur_di);
+}
+
+static void call_save_state(LPARAM lParam, int slot, const char *ext)
+{
+	if ((slot < 0) || (slot > 1))
+		return;
+	if (g_gb[slot]) {
+		char cur_di[256], sv_dir[256];
+		char name[256], mes[32], *p;
+		int sav_slot, tmp;
+		FILE *file = NULL;
+
+		GetCurrentDirectory(256, cur_di);
+		config->get_save_dir(sv_dir);
+		SetCurrentDirectory(sv_dir);
+
+		strcpy(name, tmp_sram_name[slot]);
+		p = (char*)_mbsrchr((unsigned char*)name, (unsigned int)'.');
+
+		if ((int)lParam == -1) {
+			sav_slot =	((GetKeyState('1') & 0xFFF0) ? 1 : ((GetKeyState('2') & 0xFFF0) ? 2 : ((GetKeyState('3') & 0xFFF0) ? 3 :
+						((GetKeyState('4') & 0xFFF0) ? 4 : ((GetKeyState('5') & 0xFFF0) ? 5 : ((GetKeyState('6') & 0xFFF0) ? 6 :
+						((GetKeyState('7') & 0xFFF0) ? 7 : ((GetKeyState('8') & 0xFFF0) ? 8 : ((GetKeyState('9') & 0xFFF0) ? 9 : 0)))))))));
+		} else {
+			sav_slot = (int)lParam;
+		}
+
+		sprintf(p, "%s%d", ext, sav_slot);
+
+		file = fopen(name, "wb");
+		g_gb[slot]->save_state(file);
+		tmp = render[slot]->get_timer_state();
+		fseek(file, -100, SEEK_CUR);
+		fwrite(&tmp, 4, 1, file);
+
+		fclose(file);
+
+		sprintf(mes, "save state at %d        ", sav_slot);
+		render[slot]->show_message(mes);
+
+		SetCurrentDirectory(cur_di);
+	}
+}
+
+static void call_load_state(LPARAM lParam, int slot, const char *ext)
+{
+	if ((slot < 0) || (slot > 1))
+		return;
+	if (g_gb[slot]) {
+		char cur_di[256], sv_dir[256];
+		char name[256], mes[32];
+		int sav_slot, tmp;
+		FILE *file = NULL;
+
+		GetCurrentDirectory(256, cur_di);
+		config->get_save_dir(sv_dir);
+		SetCurrentDirectory(sv_dir);
+
+		if ((int)lParam == -1) {
+			sav_slot =	((GetKeyState('1') & 0xFFF0) ? 1 : ((GetKeyState('2') & 0xFFF0) ? 2 : ((GetKeyState('3') & 0xFFF0) ? 3 :
+						((GetKeyState('4') & 0xFFF0) ? 4 : ((GetKeyState('5') & 0xFFF0) ? 5 : ((GetKeyState('6') & 0xFFF0) ? 6 :
+						((GetKeyState('7') & 0xFFF0) ? 7 : ((GetKeyState('8') & 0xFFF0) ? 8 : ((GetKeyState('9') & 0xFFF0) ? 9 : 0)))))))));
+		} else {
+			sav_slot = (int)lParam;
+		}
+
+		for (int i = 0; i < 2; i++) {
+			strcpy(name, tmp_sram_name[slot]);
+			if (i == 0)
+				sprintf((char*)_mbsrchr((unsigned char*)name, (unsigned int)'.'), "%s%d", ext, sav_slot);
+			else
+				sprintf(strstr(name, "."), "%s%d", ext, sav_slot);
+			if (file = fopen(name, "rb")) break;
+		}
+
+		if (file) {
+			g_gb[slot]->restore_state(file);
+			fseek(file, -100, SEEK_CUR);
+			fread(&tmp, 4, 1, file);
+			render[slot]->set_timer_state(tmp);
+			fclose(file);
+
+			sprintf(mes, "restore state at %d          ", sav_slot);
+			render[slot]->show_message(mes);
+		} else {
+			sprintf(mes, "can't open state at %d         ", sav_slot);
+			render[slot]->show_message(mes);
+		}
+
+		SetCurrentDirectory(cur_di);
+	}
+}
+
 LRESULT CALLBACK WndProc(HWND hwnd,UINT uMsg,WPARAM wParam,LPARAM lParam)
 {
 	int has_bat[]={0,0,0,1,0,0,1,0,0,1,0,0,1,1,0,1,1,0,0,1,0,0,0,0,0,0,0,1,0,1,1,0, 0,0,0,0,0,0,0,0}; // 0x20以下
@@ -438,82 +646,12 @@ LRESULT CALLBACK WndProc(HWND hwnd,UINT uMsg,WPARAM wParam,LPARAM lParam)
 			}
 			break;
 		case ID_SAVE_STATE:
-			if (cur_mode!=NORMAL_MODE) break;
-			if (g_gb[0]){
-				char cur_di[256],sv_dir[256];
-				GetCurrentDirectory(256,cur_di);
-				config->get_save_dir(sv_dir);
-				SetCurrentDirectory(sv_dir);
-
-				char name[256],*p;
-				strcpy(name,tmp_sram_name[0]);
-				p=(char*)_mbsrchr((unsigned char*)name,(unsigned int)'.');
-				int sav_slot;
-				
-				if ((int)lParam==-1)
-					sav_slot=((GetKeyState('1')&0xFFF0)?1:((GetKeyState('2')&0xFFF0)?2:((GetKeyState('3')&0xFFF0)?3:((GetKeyState('4')&0xFFF0)?4:((GetKeyState('5')&0xFFF0)?5:(
-						(GetKeyState('6')&0xFFF0)?6:((GetKeyState('7')&0xFFF0)?7:((GetKeyState('8')&0xFFF0)?8:((GetKeyState('9')&0xFFF0)?9:0)))))))));
-				else
-					sav_slot=(int)lParam;
-
-				sprintf(p,".sv%d",sav_slot);
-
-				FILE *file=fopen(name,"wb");
-				g_gb[0]->save_state(file);
-				int tmp=render[0]->get_timer_state();
-				fseek(file,-100,SEEK_CUR);
-				fwrite(&tmp,4,1,file);
-				fclose(file);
-
-				char mes[32];
-				sprintf(mes,"save state at %d        ",sav_slot);
-				render[0]->show_message(mes);
-
-				SetCurrentDirectory(cur_di);
-			}
+			if (cur_mode != NORMAL_MODE) break;
+			call_save_state(lParam, SLOT1, S1EXT);
 			break;
 		case ID_RESTORE_STATE:
-			if (cur_mode!=NORMAL_MODE) break;
-			if (g_gb[0]){
-				char cur_di[256],sv_dir[256];
-				char mes[32];
-				GetCurrentDirectory(256,cur_di);
-				config->get_save_dir(sv_dir);
-				SetCurrentDirectory(sv_dir);
-
-				int sav_slot;
-				if ((int)lParam==-1)
-					sav_slot=((GetKeyState('1')&0xFFF0)?1:((GetKeyState('2')&0xFFF0)?2:((GetKeyState('3')&0xFFF0)?3:((GetKeyState('4')&0xFFF0)?4:((GetKeyState('5')&0xFFF0)?5:(
-						(GetKeyState('6')&0xFFF0)?6:((GetKeyState('7')&0xFFF0)?7:((GetKeyState('8')&0xFFF0)?8:((GetKeyState('9')&0xFFF0)?9:0)))))))));
-				else
-					sav_slot=(int)lParam;
-
-				FILE *file=NULL;
-				for (int i=0;i<2;i++){
-					char name[256];
-					strcpy(name,tmp_sram_name[0]);
-					if (i==0) sprintf((char*)_mbsrchr((unsigned char*)name,(unsigned int)'.'),".sv%d",sav_slot);
-					else sprintf(strstr(name,"."),".sv%d",sav_slot);
-					if (file=fopen(name,"rb")) break;
-				}
-
-				if (file){
-					g_gb[0]->restore_state(file);
-					int tmp;
-					fseek(file,-100,SEEK_CUR);
-					fread(&tmp,4,1,file);
-					render[0]->set_timer_state(tmp);
-					fclose(file);
-					sprintf(mes,"restore state at %d          ",sav_slot);
-					render[0]->show_message(mes);
-				}
-				else{
-					sprintf(mes,"can't open state at %d         ",sav_slot);
-					render[0]->show_message(mes);
-				}
-
-				SetCurrentDirectory(cur_di);
-			}
+			if (cur_mode != NORMAL_MODE) break;
+			call_load_state(lParam, SLOT1, S1EXT);
 			break;
 		case ID_MOVIE_START:
 			if (g_gb[0]&&!mov_file){
@@ -943,21 +1081,21 @@ LRESULT CALLBACK WndProc(HWND hwnd,UINT uMsg,WPARAM wParam,LPARAM lParam)
 			}
 			break;
 		default:
-			if ((LOWORD(wParam)>=ID_ENVIRONMRNT)&&(LOWORD(wParam)<(ID_ENVIRONMRNT+256))&&(g_gb[0])){
+			if ((LOWORD(wParam) >= ID_ENVIRONMRNT) && (LOWORD(wParam) < (ID_ENVIRONMRNT+256)) && (g_gb[0])) {
 				if (dev_loaded)
 					trush_device();
-				create_device(dll_dat[LOWORD(wParam)-ID_ENVIRONMRNT].file_name);
+				create_device(dll_dat[LOWORD(wParam) - ID_ENVIRONMRNT].file_name);
 			}
-			else if ((LOWORD(wParam)>=ID_SAVE_DMY)&&(LOWORD(wParam)<(ID_SAVE_DMY+10))&&(g_gb[0])){
-				if (cur_mode==NETWORK_MODE||cur_mode==NETWORK_PREPARING) break;
-				render[0]->set_save_resurve(LOWORD(wParam)-ID_SAVE_DMY);
+			else if ((LOWORD(wParam) >= ID_SAVE_DMY) && (LOWORD(wParam) < (ID_SAVE_DMY+10)) && (g_gb[0])) {
+				if (cur_mode == NETWORK_MODE || cur_mode == NETWORK_PREPARING) break;
+				render[0]->set_save_resurve(LOWORD(wParam) - ID_SAVE_DMY);
 			}
-			else if ((LOWORD(wParam)>=ID_LOAD_DMY)&&(LOWORD(wParam)<(ID_LOAD_DMY+10))&&(g_gb[0])){
-				if (cur_mode==NETWORK_MODE||cur_mode==NETWORK_PREPARING) break;
-				render[0]->set_load_resurve(LOWORD(wParam)-ID_LOAD_DMY);
+			else if ((LOWORD(wParam) >= ID_LOAD_DMY) && (LOWORD(wParam) < (ID_LOAD_DMY+10)) && (g_gb[0])) {
+				if (cur_mode == NETWORK_MODE || cur_mode == NETWORK_PREPARING) break;
+				render[0]->set_load_resurve(LOWORD(wParam) - ID_LOAD_DMY);
 			}
-			else if ((LOWORD(wParam)>=ID_TGBHELP)&&(LOWORD(wParam)<(ID_TGBHELP+64))){
-				view_help(hwnd,tgb_help[LOWORD(wParam)-ID_TGBHELP]);
+			else if ((LOWORD(wParam) >= ID_TGBHELP) && (LOWORD(wParam) < (ID_TGBHELP+64))) {
+				view_help(hwnd, tgb_help[LOWORD(wParam) - ID_TGBHELP]);
 			}
 			break;
 		}
@@ -1092,104 +1230,13 @@ LRESULT CALLBACK WndProc(HWND hwnd,UINT uMsg,WPARAM wParam,LPARAM lParam)
 			mii.fState=(config->priority_class==5)?MFS_CHECKED:MFS_UNCHECKED;
 			SetMenuItemInfo(hMenu,ID_PROCESS_IDLE,FALSE,&mii);
 		}
-		else if ((HMENU)wParam==search_menu(hMenu,ID_SAVE_DMY)/*GetSubMenu(GetSubMenu(hMenu,0),2)*/){ // セーブのほう
-			hMenu=search_menu(hMenu,ID_SAVE_DMY);
-
-			char cur_di[256],sv_dir[256],tmp[32];
-			HANDLE hFile;
-			GetCurrentDirectory(256,cur_di);
-			config->get_save_dir(sv_dir);
-			SetCurrentDirectory(sv_dir);
-
-			while(DeleteMenu(hMenu,0,MF_BYPOSITION));
-
-			for (int i=0;i<10;i++){
-				int j;
-				for (j=0;j<2;j++){
-					char name[256],*p;
-					strcpy(name,tmp_sram_name[0]);
-					if (j==0){
-						p=(char*)_mbsrchr((unsigned char*)name,(unsigned int)'.');
-						if (!p) { j=2;break; }
-						sprintf(p,".sv%d",i);
-					}
-					else if (j==1)
-						sprintf(strstr(name,"."),".sv%d",i);
-
-					hFile=CreateFile(name,GENERIC_READ,0,NULL,OPEN_EXISTING,FILE_ATTRIBUTE_NORMAL,NULL);
-					if (hFile!=INVALID_HANDLE_VALUE){
-						BY_HANDLE_FILE_INFORMATION bhfi;
-						FILETIME lft;
-						SYSTEMTIME st;
-						GetFileInformationByHandle(hFile,&bhfi);
-						FileTimeToLocalFileTime(&bhfi.ftLastWriteTime,&lft);
-						FileTimeToSystemTime(&lft,&st);
-						sprintf(tmp,"%d : %04d/%02d/%02d %02d:%02d:%02d",i,st.wYear,st.wMonth,st.wDay,st.wHour,st.wMinute,st.wSecond);
-						CloseHandle(hFile);
-						AppendMenu(hMenu,MF_ENABLED,ID_SAVE_DMY+i,tmp);
-						break;
-					}
-				}
-				if (j==2){
-					sprintf(tmp,"%d : ----/--/-- --:--:--",i);
-					AppendMenu(hMenu,MF_ENABLED,ID_SAVE_DMY+i,tmp);
-				}
-			}
-			SetCurrentDirectory(cur_di);
+		else if ((HMENU)wParam == search_menu(hMenu, ID_SAVE_DMY)/*GetSubMenu(GetSubMenu(hMenu,0),2)*/){ // セーブのほう
+			hMenu = search_menu(hMenu, ID_SAVE_DMY);
+			menu_save_state(hMenu, ID_SAVE_DMY, S1EXT);
 		}
-		else if ((HMENU)wParam==search_menu(hMenu,ID_LOAD_DMY)/*GetSubMenu(GetSubMenu(hMenu,0),3)*/){ // ロードのほう
-			hMenu=search_menu(hMenu,ID_LOAD_DMY);
-
-			char cur_di[256],sv_dir[256],tmp[32];
-			HANDLE hFile;
-			MENUITEMINFO mii;
-			GetCurrentDirectory(256,cur_di);
-			config->get_save_dir(sv_dir);
-			SetCurrentDirectory(sv_dir);
-
-			while(DeleteMenu(hMenu,0,MF_BYPOSITION));
-
-			for (int i=0;i<10;i++){
-				int j;
-				for (j=0;j<2;j++){
-					char name[256],*p;
-					strcpy(name,tmp_sram_name[0]);
-					if (j==0){
-						p=(char*)_mbsrchr((unsigned char*)name,(unsigned int)'.');
-						if (!p) { j=2;break; }
-						sprintf(p,".sv%d",i);
-					}
-					else if (j==1)
-						sprintf(strstr(name,"."),".sv%d",i);
-
-					hFile=CreateFile(name,GENERIC_READ,0,NULL,OPEN_EXISTING,FILE_ATTRIBUTE_NORMAL,NULL);
-					if (hFile!=INVALID_HANDLE_VALUE){
-						BY_HANDLE_FILE_INFORMATION bhfi;
-						FILETIME lft;
-						SYSTEMTIME st;
-						GetFileInformationByHandle(hFile,&bhfi);
-						FileTimeToLocalFileTime(&bhfi.ftLastWriteTime,&lft);
-						FileTimeToSystemTime(&lft,&st);
-						sprintf(tmp,"%d : %04d/%02d/%02d %02d:%02d:%02d",i,st.wYear,st.wMonth,st.wDay,st.wHour,st.wMinute,st.wSecond);
-						CloseHandle(hFile);
-						AppendMenu(hMenu,MF_ENABLED,ID_LOAD_DMY+i,tmp);
-						break;
-					}
-				}
-				if (j==2){
-					sprintf(tmp,"%d : ----/--/-- --:--:--",i);
-					ZeroMemory(&mii,sizeof(mii));
-					mii.cbSize=sizeof(mii);
-					mii.fMask=MIIM_STATE|MIIM_TYPE|MIIM_ID;
-					mii.fState=MFS_GRAYED;
-					mii.fType=MFT_STRING;
-					mii.wID=ID_LOAD_DMY+i;
-					mii.cch=strlen(tmp);
-					mii.dwTypeData=tmp;
-					InsertMenuItem(hMenu,i,TRUE,&mii);
-				}
-			}
-			SetCurrentDirectory(cur_di);
+		else if ((HMENU)wParam == search_menu(hMenu, ID_LOAD_DMY)/*GetSubMenu(GetSubMenu(hMenu,0),3)*/){ // ロードのほう
+			hMenu = search_menu(hMenu, ID_LOAD_DMY);
+			menu_load_state(hMenu, ID_LOAD_DMY, S1EXT);
 		}
 		break;
 	case WM_DROPFILES:

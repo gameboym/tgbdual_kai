@@ -292,14 +292,6 @@
 #define ID_ACCELERATOR40129             40129
 #define ID_STARTSTOP                    40129
 #define ID_Menu                         40131
-#define ID_40132                        40132
-#define ID_40135                        40135
-#define ID_40136                        40136
-#define ID_SAVE2_DMY                    40140
-#define ID_LOAD2_DMY                    40141
-#define ID_SAVE12_DMY                   40142
-#define ID_LOAD12_DMY                   40143
-#define ID_40144                        40144
 #define ID_S2_X1                        40146
 #define ID_S2_X2                        40150
 #define ID_S2_X3                        40151
@@ -314,6 +306,11 @@
 #define ID_ENVIRONMRNT                  48000
 #define ID_SAVE_DMY                     49000
 #define ID_LOAD_DMY                     49500
+#define ID_SAVE2_DMY                    50000
+#define ID_LOAD2_DMY                    50500
+#define ID_SAVE12_DMY                   51000
+#define ID_LOAD12_DMY                   51500
+
 
 // Next default values for new objects
 // 
