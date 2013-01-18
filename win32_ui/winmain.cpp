@@ -961,6 +961,26 @@ LRESULT CALLBACK WndProc(HWND hwnd,UINT uMsg,WPARAM wParam,LPARAM lParam)
 		case ID_X4:
 			SetWindowPos(hWnd,HWND_NOTOPMOST,0,0,(GetSystemMetrics(SM_CXFIXEDFRAME)+1)*2+160*4,(GetSystemMetrics(SM_CYFIXEDFRAME)+GetSystemMetrics(SM_CYMENU)+1)*2+144*4,SWP_NOMOVE|SWP_SHOWWINDOW);
 			break;
+		case ID_S2_X1:
+			if (hWnd_sub)
+				SetWindowPos(hWnd_sub, HWND_NOTOPMOST, 0, 0, GetSystemMetrics(SM_CXSIZEFRAME) * 2 + 160,
+					GetSystemMetrics(SM_CYSIZEFRAME) * 2 + GetSystemMetrics(SM_CYCAPTION) + 144, SWP_NOMOVE | SWP_SHOWWINDOW);
+			break;
+		case ID_S2_X2:
+			if (hWnd_sub)
+				SetWindowPos(hWnd_sub, HWND_NOTOPMOST, 0, 0, GetSystemMetrics(SM_CXSIZEFRAME) * 2 + 160 * 2,
+					GetSystemMetrics(SM_CYSIZEFRAME) * 2 + GetSystemMetrics(SM_CYCAPTION) + 144 * 2, SWP_NOMOVE | SWP_SHOWWINDOW);
+			break;
+		case ID_S2_X3:
+			if (hWnd_sub)
+				SetWindowPos(hWnd_sub, HWND_NOTOPMOST, 0, 0, GetSystemMetrics(SM_CXSIZEFRAME) * 2 + 160 * 3,
+					GetSystemMetrics(SM_CYSIZEFRAME) * 2 + GetSystemMetrics(SM_CYCAPTION) + 144 * 3, SWP_NOMOVE | SWP_SHOWWINDOW);
+			break;
+		case ID_S2_X4:
+			if (hWnd_sub)
+				SetWindowPos(hWnd_sub, HWND_NOTOPMOST, 0, 0, GetSystemMetrics(SM_CXSIZEFRAME) * 2 + 160 * 4,
+					GetSystemMetrics(SM_CYSIZEFRAME) * 2 + GetSystemMetrics(SM_CYCAPTION) + 144 * 4, SWP_NOMOVE | SWP_SHOWWINDOW);
+			break;
 		case ID_SURFACETYPE_1:
 			config->render_pass=0;
 			if (render[0]) render[0]->set_render_pass(0);
