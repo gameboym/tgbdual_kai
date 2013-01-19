@@ -794,16 +794,16 @@ LRESULT CALLBACK WndProc(HWND hwnd,UINT uMsg,WPARAM wParam,LPARAM lParam)
 			}
 			break;
 		case ID_LOADROM2:
-			if (cur_mode==NETWORK_MODE||cur_mode==NETWORK_PREPARING) break;
-			if (!hWnd_sub){
+			if (cur_mode == NETWORK_MODE||cur_mode == NETWORK_PREPARING) break;
+			if (!hWnd_sub) {
 				RECT rect;
-				GetWindowRect(hWnd,&rect);
-				WNDCLASS wc={CS_HREDRAW|CS_VREDRAW,WndProc2,0,0,hInstance,NULL,LoadCursor(hInstance,IDC_ARROW),
-					(HBRUSH)GetStockObject(BLACK_BRUSH),NULL,"gb emu \"tgb\" sub win"};
+				GetWindowRect(hWnd, &rect);
+				WNDCLASS wc = {CS_HREDRAW | CS_VREDRAW, WndProc2, 0, 0, hInstance, NULL, LoadCursor(hInstance, IDC_ARROW),
+					(HBRUSH)GetStockObject(BLACK_BRUSH), NULL, "gb emu \"tgb\" sub win"};
 				RegisterClass(&wc);
-				hWnd_sub=CreateWindow("gb emu \"tgb\" sub win","2nd",WS_DLGFRAME,rect.right,rect.top+GetSystemMetrics(SM_CYMENU)+1,
-					(GetSystemMetrics(SM_CXFIXEDFRAME))*2+320,(GetSystemMetrics(SM_CYFIXEDFRAME))*2+(GetSystemMetrics(SM_CYMENU))+288,0L,0L,hInstance,0L);
-				ShowWindow(hWnd_sub,SW_SHOW);
+				hWnd_sub = CreateWindow("gb emu \"tgb\" sub win", "2nd", WS_DLGFRAME | WS_THICKFRAME, rect.right, rect.top+GetSystemMetrics(SM_CYMENU) - 1,
+					GetSystemMetrics(SM_CXSIZEFRAME) * 2 + 160 * 3, GetSystemMetrics(SM_CYSIZEFRAME) * 2 + GetSystemMetrics(SM_CYCAPTION) + 144 * 3, 0L, 0L, hInstance, 0L);
+				ShowWindow(hWnd_sub, SW_SHOW);
 			}
 			n++;
 		case ID_LOADROM:
@@ -958,16 +958,20 @@ LRESULT CALLBACK WndProc(HWND hwnd,UINT uMsg,WPARAM wParam,LPARAM lParam)
 				g_gb[0]->refresh_pal();
 			break;
 		case ID_X1:
-			SetWindowPos(hWnd,HWND_NOTOPMOST,0,0,(GetSystemMetrics(SM_CXFIXEDFRAME)+1)*2+160,(GetSystemMetrics(SM_CYFIXEDFRAME)+GetSystemMetrics(SM_CYMENU))*2+GetSystemMetrics(SM_CYMENU)+1+144,SWP_NOMOVE|SWP_SHOWWINDOW);
+			SetWindowPos(hWnd, HWND_NOTOPMOST, 0, 0, GetSystemMetrics(SM_CXSIZEFRAME) * 2 + 160,
+				GetSystemMetrics(SM_CYSIZEFRAME) * 2 + GetSystemMetrics(SM_CYCAPTION) + (GetSystemMetrics(SM_CYMENU)-1) * 3 + 144, SWP_NOMOVE | SWP_SHOWWINDOW);
 			break;
 		case ID_X2:
-			SetWindowPos(hWnd,HWND_NOTOPMOST,0,0,(GetSystemMetrics(SM_CXFIXEDFRAME)+1)*2+160*2,(GetSystemMetrics(SM_CYFIXEDFRAME)+GetSystemMetrics(SM_CYMENU)+1)*2+144*2,SWP_NOMOVE|SWP_SHOWWINDOW);
+			SetWindowPos(hWnd, HWND_NOTOPMOST, 0, 0, GetSystemMetrics(SM_CXSIZEFRAME) * 2 + 160 * 2,
+				GetSystemMetrics(SM_CYSIZEFRAME) * 2 + GetSystemMetrics(SM_CYCAPTION) + (GetSystemMetrics(SM_CYMENU)-1) * 2 + 144 * 2, SWP_NOMOVE | SWP_SHOWWINDOW);
 			break;
 		case ID_X3:
-			SetWindowPos(hWnd,HWND_NOTOPMOST,0,0,(GetSystemMetrics(SM_CXFIXEDFRAME)+1)*2+160*3,(GetSystemMetrics(SM_CYFIXEDFRAME)+GetSystemMetrics(SM_CYMENU)+1)*2+144*3,SWP_NOMOVE|SWP_SHOWWINDOW);
+			SetWindowPos(hWnd, HWND_NOTOPMOST, 0, 0, GetSystemMetrics(SM_CXSIZEFRAME) * 2 + 160 * 3,
+				GetSystemMetrics(SM_CYSIZEFRAME) * 2 + GetSystemMetrics(SM_CYCAPTION) + GetSystemMetrics(SM_CYMENU) - 1 + 144 * 3, SWP_NOMOVE | SWP_SHOWWINDOW);
 			break;
 		case ID_X4:
-			SetWindowPos(hWnd,HWND_NOTOPMOST,0,0,(GetSystemMetrics(SM_CXFIXEDFRAME)+1)*2+160*4,(GetSystemMetrics(SM_CYFIXEDFRAME)+GetSystemMetrics(SM_CYMENU)+1)*2+144*4,SWP_NOMOVE|SWP_SHOWWINDOW);
+			SetWindowPos(hWnd, HWND_NOTOPMOST, 0, 0, GetSystemMetrics(SM_CXSIZEFRAME) * 2 + 160 * 4,
+				GetSystemMetrics(SM_CYSIZEFRAME) * 2 + GetSystemMetrics(SM_CYCAPTION) + GetSystemMetrics(SM_CYMENU) - 1 + 144 * 4, SWP_NOMOVE | SWP_SHOWWINDOW);
 			break;
 		case ID_S2_X1:
 			if (hWnd_sub)
