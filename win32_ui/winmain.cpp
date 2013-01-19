@@ -663,13 +663,17 @@ LRESULT CALLBACK WndProc(HWND hwnd,UINT uMsg,WPARAM wParam,LPARAM lParam)
 			break;
 		case ID_SW_SAVE_STATE:
 			if (cur_mode != NORMAL_MODE) break;
-			call_save_state(lParam, SLOT1, W1EXT);
-			call_save_state(lParam, SLOT2, W2EXT);
+			if (g_gb[0] && g_gb[1]) {
+				call_save_state(lParam, SLOT1, W1EXT);
+				call_save_state(lParam, SLOT2, W2EXT);
+			}
 			break;
 		case ID_SW_RESTORE_STATE:
 			if (cur_mode != NORMAL_MODE) break;
-			call_load_state(lParam, SLOT1, W1EXT);
-			call_load_state(lParam, SLOT2, W2EXT);
+			if (g_gb[0] && g_gb[1]) {
+				call_load_state(lParam, SLOT1, W1EXT);
+				call_load_state(lParam, SLOT2, W2EXT);
+			}
 			break;
 		case ID_MOVIE_START:
 			if (g_gb[0]&&!mov_file){
@@ -889,6 +893,10 @@ LRESULT CALLBACK WndProc(HWND hwnd,UINT uMsg,WPARAM wParam,LPARAM lParam)
 		case ID_DBG_MEMDUMP:
 			if (g_gb[0])
 				ShowWindow(CreateDialog(hInstance,MAKEINTRESOURCE(IDD_MEM_DUMP_KAI),hwnd,MemDumpKaiProc),SW_SHOW);
+			break;
+		case ID_S2_DBG_MEMDUMP:
+			if (g_gb[1])
+				ShowWindow(CreateDialog(hInstance,MAKEINTRESOURCE(IDD_MEM_DUMP_KAI),hwnd,MemDumpKaiProc2),SW_SHOW);
 			break;
 		case ID_MEM_DUMP:
 			if (g_gb[0])

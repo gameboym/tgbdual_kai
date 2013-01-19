@@ -1013,7 +1013,7 @@ LRESULT CALLBACK MyMemEditProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPara
 {
 	static bool pause = false;
 	int start, end, high;
-	
+
 	char strbuf[256];
 	char num[2];
 	char *tocheck;
@@ -1041,7 +1041,7 @@ LRESULT CALLBACK MyMemEditProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPara
 
 			num[0] = (char)wParam;
 			num[1] = '\0';
-			chgdata = (byte)strtol(num, &tocheck, 16); 
+			chgdata = (byte)strtol(num, &tocheck, 16);
 			if (tocheck == &num[0]) {
 				sprintf(strbuf, "入力文字が不正です。文字 = %c", num[0]);
 				MessageBox( hwnd, strbuf, "メッセージ", MB_OK );
@@ -1181,7 +1181,7 @@ static BOOL CALLBACK MemDumpKaiProc(HWND hwnd,UINT uMsg,WPARAM wParam,LPARAM lPa
 		scr.cbSize = sizeof(scr);
 		scr.fMask = SIF_POS;
 		GetScrollInfo(hScrl, SB_CTL, &scr);
-		
+
 		switch(LOWORD(wParam))
 		{
 		case SB_BOTTOM:
@@ -1228,9 +1228,9 @@ static BOOL CALLBACK MemDumpKaiProc(HWND hwnd,UINT uMsg,WPARAM wParam,LPARAM lPa
 		{
 			GetDlgItemText(hwnd, IDC_ADDRESS, buf, 256);
 			tmp = (strtol(buf, NULL, 16) >> 4) & 0xFFF;
-			
+
 			if (tmp > 0xFF6) tmp = 0xFF6;
-			
+
 			hScrl = GetDlgItem(hwnd, IDC_SCROLL);
 			SetScrollPos(hScrl, SB_CTL, tmp, TRUE);
 			SendMessage(hwnd, WM_USER+1, (WPARAM)tmp, 0);
@@ -1250,7 +1250,7 @@ static BOOL CALLBACK MemDumpKaiProc(HWND hwnd,UINT uMsg,WPARAM wParam,LPARAM lPa
 				g_gb[0]->get_cpu()->read_nocheck(((tmp)<<4)+0),g_gb[0]->get_cpu()->read_nocheck(((tmp)<<4)+1),
 				g_gb[0]->get_cpu()->read_nocheck(((tmp)<<4)+2),g_gb[0]->get_cpu()->read_nocheck(((tmp)<<4)+3),
 				g_gb[0]->get_cpu()->read_nocheck(((tmp)<<4)+4),g_gb[0]->get_cpu()->read_nocheck(((tmp)<<4)+5),
-				g_gb[0]->get_cpu()->read_nocheck(((tmp)<<4)+6),g_gb[0]->get_cpu()->read_nocheck(((tmp)<<4)+7),	
+				g_gb[0]->get_cpu()->read_nocheck(((tmp)<<4)+6),g_gb[0]->get_cpu()->read_nocheck(((tmp)<<4)+7),
 				g_gb[0]->get_cpu()->read_nocheck(((tmp)<<4)+8),g_gb[0]->get_cpu()->read_nocheck(((tmp)<<4)+9),
 				g_gb[0]->get_cpu()->read_nocheck(((tmp)<<4)+10),g_gb[0]->get_cpu()->read_nocheck(((tmp)<<4)+11),
 				g_gb[0]->get_cpu()->read_nocheck(((tmp)<<4)+12),g_gb[0]->get_cpu()->read_nocheck(((tmp)<<4)+13),
@@ -1260,7 +1260,290 @@ static BOOL CALLBACK MemDumpKaiProc(HWND hwnd,UINT uMsg,WPARAM wParam,LPARAM lPa
 			for (j = 0; j < 16; j++)
 			{
 				asciibuf[j] = g_gb[0]->get_cpu()->read_nocheck( ((tmp) << 4) + j );
-				if (asciibuf[j] < 0x21 || (asciibuf[j] > 0x7e && asciibuf[j] < 0xa1) || asciibuf[j] > 0xdf) 
+				if (asciibuf[j] < 0x21 || (asciibuf[j] > 0x7e && asciibuf[j] < 0xa1) || asciibuf[j] > 0xdf)
+					asciibuf[j] = '.';
+			}
+			sprintf(strbuf, "%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c",
+				asciibuf[0], asciibuf[1], asciibuf[2], asciibuf[3],
+				asciibuf[4], asciibuf[5], asciibuf[6], asciibuf[7],
+				asciibuf[8], asciibuf[9], asciibuf[10], asciibuf[11],
+				asciibuf[12], asciibuf[13], asciibuf[14], asciibuf[15]);
+			strcat(buf, strbuf);
+
+			tmp++;
+		}
+		SetDlgItemText(hwnd, IDC_DUMP, buf);
+		return TRUE;
+	case WM_TIMER:
+		hScrl = GetDlgItem(hwnd, IDC_SCROLL);
+		scr.cbSize = sizeof(scr);
+		scr.fMask = SIF_POS;
+		GetScrollInfo(hScrl, SB_CTL, &scr);
+		SendMessage(hwnd, WM_USER+1, (WPARAM)scr.nPos, 0);
+		return TRUE;
+	case WM_CLOSE:
+		KillTimer(hwnd, 789);
+		DestroyWindow(hwnd);
+		return TRUE;
+	}
+
+    return FALSE;
+}
+
+LRESULT CALLBACK MyMemEditProc2(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+{
+	static bool pause = false;
+	int start, end, high;
+
+	char strbuf[256];
+	char num[2];
+	char *tocheck;
+
+	byte chgdata, olddata;
+	word baddress, seladdress;
+
+	switch ( uMsg )
+	{
+	case WM_KEYDOWN:
+		VKNumPadToNum(&wParam);
+		if (isxdigit((int)wParam)) {
+			SendMessage(hwnd, EM_GETSEL, (WPARAM)&start, (LPARAM)&end);
+			// 選択可能領域か判定する
+			if (!MemDumpSelCheck(start))
+				return TRUE;
+
+			baddress = MemDumpGetBaseAddress(hwnd);
+			if (!baddress)
+				return TRUE;
+
+			seladdress = MemDumpGetAddress(baddress, start, &high);
+			if (!seladdress)
+				return TRUE;
+
+			num[0] = (char)wParam;
+			num[1] = '\0';
+			chgdata = (byte)strtol(num, &tocheck, 16);
+			if (tocheck == &num[0]) {
+				sprintf(strbuf, "入力文字が不正です。文字 = %c", num[0]);
+				MessageBox( hwnd, strbuf, "メッセージ", MB_OK );
+				return TRUE;
+			}
+
+			olddata = g_gb[1]->get_cpu()->read_nocheck(seladdress);
+			if (high)
+				chgdata = (chgdata << 4) + (olddata & 0x0f);
+			else
+				chgdata = chgdata + (olddata & 0xf0);
+			g_gb[1]->get_cpu()->write_nocheck(seladdress, chgdata);
+
+			// 数値を新しいものに置き換える
+			SendMessage(hwnd, EM_REPLACESEL, 0, (LPARAM)num);
+
+			// 次のセルに移動する
+			SendMessage(hwnd, EM_SETSEL, (WPARAM)start, (LPARAM)end); // 選択が解除されているため初期位置にセット
+			MemDumpSelRight(hwnd);
+
+			return TRUE;
+		}
+		switch (wParam)
+		{
+		case VK_UP:
+			MemDumpSelUp(hwnd);
+			return TRUE;
+		case VK_DOWN:
+			MemDumpSelDown(hwnd);
+			return TRUE;
+		case VK_LEFT:
+			MemDumpSelLeft(hwnd);
+			return TRUE;
+		case VK_RIGHT:
+			MemDumpSelRight(hwnd);
+			return TRUE;
+		default:
+			return TRUE;
+		}
+		break;
+
+	case WM_CHAR:
+	case WM_SYSKEYDOWN:
+		return FALSE;
+
+	case WM_LBUTTONDOWN:
+		if (b_running)
+		{
+			pause = true;
+			PAUSEprocess();
+			KillTimer(GetParent(hwnd), 789);
+		}
+		else if (!pause) // PAUSEprocessが他によって既に行われていた場合タイマーだけ止める
+		{
+			KillTimer(GetParent(hwnd), 789);
+		}
+
+		::CallWindowProc( old_medit_proc, hwnd, uMsg, wParam, lParam );
+		::CallWindowProc( old_medit_proc, hwnd, WM_LBUTTONUP, wParam, lParam );
+		SendMessage(hwnd, EM_GETSEL, (WPARAM)&start, (LPARAM)&end);
+
+		// 選択可能領域か判定する
+		if (MemDumpSelCheck(start)) {
+			SendMessage(hwnd, EM_SETSEL, (WPARAM)start, (LPARAM) end+1);
+			SetFocus(hwnd);			// セットフォーカスしないとフォーカスが復帰しないため修正
+			return TRUE;
+		}
+
+		SetFocus(GetParent(hwnd)); // フォーカスを渡して戻る
+		return TRUE;
+
+	case WM_KILLFOCUS:
+		if (pause)
+		{
+			pause = false;
+			PAUSEprocess();
+		}
+		SetTimer(GetParent(hwnd), 789, 100, NULL);
+		return TRUE;
+
+	case WM_CLOSE:
+		pause = false;
+		break;
+
+	case WM_LBUTTONUP:
+	case WM_LBUTTONDBLCLK:
+	case WM_RBUTTONDOWN:
+	case WM_RBUTTONUP:
+	case WM_RBUTTONDBLCLK:
+	case WM_KEYUP:
+		return FALSE;
+
+	}
+	return ::CallWindowProc( old_medit_proc, hwnd, uMsg, wParam, lParam );
+}
+
+static BOOL CALLBACK MemDumpKaiProc2(HWND hwnd,UINT uMsg,WPARAM wParam,LPARAM lParam)
+{
+	static WORD cur_adr;
+	HWND hScrl;
+	HWND hMEdit;
+	SCROLLINFO scr;
+	char buf[256*17];
+	int tmp, i, j;
+
+	switch(uMsg)
+	{
+	case WM_INITDIALOG:
+		cur_adr = 0xC000;
+
+		scr.cbSize = sizeof(scr);
+		scr.fMask = SIF_RANGE|SIF_POS;
+		scr.nMin = 0;
+		scr.nMax = 0xFFF-0x9;
+		scr.nPos = cur_adr >> 4;
+		hScrl = GetDlgItem(hwnd, IDC_SCROLL);
+		SetScrollInfo(hScrl, SB_CTL, &scr, TRUE);
+		tmp = scr.nPos;
+		SendMessage(hwnd, WM_USER+1, (WPARAM)tmp, 0);
+
+		SetTimer(hwnd, 789, 100, NULL);
+
+		// エディット領域の処理関数を変更
+		hMEdit = GetDlgItem( hwnd, IDC_DUMP );
+		old_medit_proc = (WNDPROC)GetWindowLong( hMEdit, GWL_WNDPROC );
+		SetWindowLong( hMEdit, GWL_WNDPROC, (LONG)MyMemEditProc2 );
+
+		SetWindowText(hwnd, "メモリダンプ(スロット2)");
+
+		return TRUE;
+
+	case WM_VSCROLL:
+
+		int max, min;
+
+		max = 0xFFF-0x0f;
+		min = 0;
+		hScrl = (HWND)lParam;
+		scr.cbSize = sizeof(scr);
+		scr.fMask = SIF_POS;
+		GetScrollInfo(hScrl, SB_CTL, &scr);
+
+		switch(LOWORD(wParam))
+		{
+		case SB_BOTTOM:
+			scr.nPos = max;
+			break;
+		case SB_LINEDOWN:
+			scr.nPos++;
+			break;
+		case SB_PAGEDOWN:
+			scr.nPos += 10;
+			break;
+		case SB_LINEUP:
+			scr.nPos--;
+			break;
+		case SB_PAGEUP:
+			scr.nPos -= 10;
+			break;
+		case SB_TOP:
+			scr.nPos = min;
+			break;
+		case SB_ENDSCROLL:
+			break;
+		default:
+			scr.nPos = (short)HIWORD(wParam);
+			break;
+		}
+		if (scr.nPos > max) scr.nPos = max;
+		if (scr.nPos < min) scr.nPos = min;
+
+		tmp = scr.nPos;
+
+		SetScrollInfo(hScrl, SB_CTL, &scr, TRUE);
+
+		SendMessage(hwnd, WM_USER+1, (WPARAM)tmp, 0);
+
+		return TRUE;
+	case WM_COMMAND:
+		if (LOWORD(wParam) == IDOK)
+		{
+			DestroyWindow(hwnd);
+			return TRUE;
+		}
+		else if (LOWORD(wParam) == IDC_MOVE)
+		{
+			GetDlgItemText(hwnd, IDC_ADDRESS, buf, 256);
+			tmp = (strtol(buf, NULL, 16) >> 4) & 0xFFF;
+
+			if (tmp > 0xFF6) tmp = 0xFF6;
+
+			hScrl = GetDlgItem(hwnd, IDC_SCROLL);
+			SetScrollPos(hScrl, SB_CTL, tmp, TRUE);
+			SendMessage(hwnd, WM_USER+1, (WPARAM)tmp, 0);
+
+			return TRUE;
+		}
+		break;
+	case WM_USER+1: // 画面表示
+		tmp = (int)wParam;
+		char strbuf[256];
+		unsigned char asciibuf[16];
+
+		strcpy(buf, "       00 01 02 03 04 05 06 07 08 09 0A 0B 0C 0D 0E 0F");
+		for (i = 0; i < 16; i++)
+		{
+			sprintf(strbuf, "\r\n%04X | %02X %02X %02X %02X %02X %02X %02X %02X %02X %02X %02X %02X %02X %02X %02X %02X | ", tmp << 4,
+				g_gb[1]->get_cpu()->read_nocheck(((tmp)<<4)+0),g_gb[1]->get_cpu()->read_nocheck(((tmp)<<4)+1),
+				g_gb[1]->get_cpu()->read_nocheck(((tmp)<<4)+2),g_gb[1]->get_cpu()->read_nocheck(((tmp)<<4)+3),
+				g_gb[1]->get_cpu()->read_nocheck(((tmp)<<4)+4),g_gb[1]->get_cpu()->read_nocheck(((tmp)<<4)+5),
+				g_gb[1]->get_cpu()->read_nocheck(((tmp)<<4)+6),g_gb[1]->get_cpu()->read_nocheck(((tmp)<<4)+7),
+				g_gb[1]->get_cpu()->read_nocheck(((tmp)<<4)+8),g_gb[1]->get_cpu()->read_nocheck(((tmp)<<4)+9),
+				g_gb[1]->get_cpu()->read_nocheck(((tmp)<<4)+10),g_gb[1]->get_cpu()->read_nocheck(((tmp)<<4)+11),
+				g_gb[1]->get_cpu()->read_nocheck(((tmp)<<4)+12),g_gb[1]->get_cpu()->read_nocheck(((tmp)<<4)+13),
+				g_gb[1]->get_cpu()->read_nocheck(((tmp)<<4)+14),g_gb[1]->get_cpu()->read_nocheck(((tmp)<<4)+15));
+			strcat(buf, strbuf);
+
+			for (j = 0; j < 16; j++)
+			{
+				asciibuf[j] = g_gb[1]->get_cpu()->read_nocheck( ((tmp) << 4) + j );
+				if (asciibuf[j] < 0x21 || (asciibuf[j] > 0x7e && asciibuf[j] < 0xa1) || asciibuf[j] > 0xdf)
 					asciibuf[j] = '.';
 			}
 			sprintf(strbuf, "%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c",

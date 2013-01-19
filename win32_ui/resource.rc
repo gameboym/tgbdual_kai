@@ -269,8 +269,8 @@ BEGIN
     DEFPUSHBUTTON   "OK",IDOK,39,52,50,13
     LTEXT           "TGB Dual kai Ver",IDC_STATIC,28,7,53,8
     LTEXT           "2000-2004 Hii",IDC_STATIC,66,25,42,8
-    LTEXT           "1.1.3.3",IDC_STATIC,84,7,18,8
-    LTEXT           "2006-2012 gbm",IDC_STATIC,66,37,46,8
+    LTEXT           "1.1.4.0",IDC_STATIC,84,7,18,8
+    LTEXT           "2006-2013 gbm",IDC_STATIC,66,37,46,8
     LTEXT           "Copyright(C)",IDC_STATIC,22,26,38,8
 END
 
@@ -1132,8 +1132,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 1,1,3,3
- PRODUCTVERSION 1,1,3,3
+ FILEVERSION 1,1,4,0
+ PRODUCTVERSION 1,1,4,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -1151,13 +1151,13 @@ BEGIN
             VALUE "Comments", "Game Boy / Game Boy COLOR Emulator debuger ver"
             VALUE "CompanyName", "not  original : T's Emulator Laboratry Inc."
             VALUE "FileDescription", "TGB Dual kai"
-            VALUE "FileVersion", "1, 1, 3, 3"
+            VALUE "FileVersion", "1, 1, 4, 0"
             VALUE "InternalName", "TGB_Dual kai"
-            VALUE "LegalCopyright", "Copyright (C) gbm 2006-2012 Hii 2000-2004"
+            VALUE "LegalCopyright", "Copyright (C) gbm 2006-2013 Hii 2000-2004"
             VALUE "LegalTrademarks", "TGB Dual kai (R)"
             VALUE "OriginalFilename", "TGB_Dual_kai.exe"
             VALUE "ProductName", "Yet Another ""TGB Dual kai"" ..."
-            VALUE "ProductVersion", "1, 1, 3, 3"
+            VALUE "ProductVersion", "1, 1, 4, 0"
         END
     END
     BLOCK "VarFileInfo"
